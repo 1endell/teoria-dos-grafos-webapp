@@ -11,7 +11,7 @@ import os
 sys.path.append('/home/ubuntu')  # Adiciona o diretório raiz ao path
 from grafo_backend.core import Grafo
 from grafo_backend.operacoes.combinacao import (
-    uniao, intersecao, diferenca, diferenca_simetrica, composicao
+    uniao_grafos, intersecao_grafos, diferenca_grafos, diferenca_simetrica_grafos, composicao_grafos
 )
 
 
