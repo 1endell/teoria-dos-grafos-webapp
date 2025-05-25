@@ -1,14 +1,11 @@
 services:
+services:
   api-grafos:
     build:
-      context: ./grafo_api
+      context: ./grafo_api  # Contexto agora é a pasta grafo_api
       dockerfile: conf/env/docker/Dockerfile
-    volumes:
-      - ./grafo_api/app:/app/app
-#      - ./grafo_api/alembic/alembic.ini:/app/alembic.ini
-#      - ./grafo_api/alembic/alembic/:/app/alembic/
     environment:
-      PYTHONPATH: /app
+      PYTHONPATH: /app:/app/grafo_backend  # Caminho explícito
     ports:
       - "8010:8000"
     networks:

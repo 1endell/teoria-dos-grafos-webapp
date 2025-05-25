@@ -16,7 +16,7 @@ from typing import Dict, List, Any, Optional, Tuple, Set
 # Importações do backend de grafos
 import sys
 sys.path.append('/home/ubuntu')  # Adiciona o diretório raiz ao path
-from grafo_backend.core import Grafo
+from grafo_backend.core.grafo import Grafo
 from grafo_backend.persistencia.exportador import exportar_grafo
 from grafo_backend.persistencia.importador import importar_grafo
 

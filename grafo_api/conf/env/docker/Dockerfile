@@ -1,22 +1,21 @@
-# ./conf/env/docker/Dockerfile
+# grafo_api/conf/env/docker/Dockerfile
 
-# Use uma imagem base do Python 3.9 slim
 FROM python:3.9-slim
 
-# Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Primeiro copia o requirements.txt para aproveitar o cache do Docker
-COPY requirements.txt .
+# Copia primeiro o requirements.txt
+COPY ./requirements.txt .
 
-# Instala as dependências do Python
+# Instala dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia todo o conteúdo do projeto para o container
+# Copia TODO o conteúdo do grafo_api (incluindo grafo_backend)
 COPY . .
 
-# Expõe a porta que será usada pelo FastAPI
+# Configura o Python Path
+ENV PYTHONPATH="${PYTHONPATH}:/app/grafo_backend"
+
 EXPOSE 8000
 
-# Comando para iniciar o servidor UVicorn com configurações específicas
 CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "debug"]
