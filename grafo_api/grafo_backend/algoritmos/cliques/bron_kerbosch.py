@@ -8,7 +8,7 @@ estendido adicionando mais vértices.
 
 from typing import Dict, List, Any, Tuple, Set, Optional
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def bron_kerbosch(grafo: Grafo, com_pivoteamento: bool = True) -> List[Set[Any]]:

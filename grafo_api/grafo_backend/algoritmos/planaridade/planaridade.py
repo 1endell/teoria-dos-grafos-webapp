@@ -7,7 +7,7 @@ detectar subgrafos proibidos (K3,3 e K5) e calcular propriedades de grafos plana
 
 import networkx as nx
 from typing import Dict, List, Any, Set, Tuple, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def verificar_planaridade(grafo: Grafo) -> bool:

@@ -7,7 +7,7 @@ um ciclo que percorre cada aresta exatamente uma vez.
 
 from typing import Dict, List, Any, Tuple, Set, Optional
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def hierholzer(grafo: Grafo, vertice_inicial: Any = None) -> Optional[List[Any]]:

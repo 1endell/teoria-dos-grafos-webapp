@@ -7,7 +7,7 @@ exceto pelo vértice inicial que também é o final.
 
 from typing import Dict, List, Any, Tuple, Set, Optional
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def encontrar_ciclo_hamiltoniano_backtracking(grafo: Grafo) -> Optional[List[Any]]:

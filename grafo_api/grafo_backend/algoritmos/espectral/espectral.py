@@ -9,7 +9,7 @@ espectral e detecção de comunidades.
 import networkx as nx
 import numpy as np
 from typing import Dict, List, Any, Set, Tuple, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 from scipy import sparse
 from scipy.sparse.linalg import eigsh
 from sklearn.cluster import KMeans

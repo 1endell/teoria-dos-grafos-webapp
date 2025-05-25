@@ -8,7 +8,7 @@ um formato de texto estruturado para representação de dados.
 import networkx as nx
 import json
 from typing import Dict, List, Any, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def exportar_json(grafo: Grafo, caminho: str) -> bool:

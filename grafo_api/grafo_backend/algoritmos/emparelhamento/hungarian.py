@@ -8,7 +8,7 @@ encontrando a atribuição de custo mínimo em uma matriz de custos.
 from typing import Dict, List, Any, Tuple, Set, Optional
 import numpy as np
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def hungarian_algorithm(matriz_custos: np.ndarray) -> Tuple[List[Tuple[int, int]], float]:

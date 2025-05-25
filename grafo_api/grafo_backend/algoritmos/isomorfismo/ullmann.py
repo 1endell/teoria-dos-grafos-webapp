@@ -9,7 +9,7 @@ um subconjunto de vértices do outro grafo que preserva as adjacências.
 from typing import Dict, List, Any, Tuple, Set, Optional
 import numpy as np
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def ullmann(grafo_pequeno: Grafo, grafo_grande: Grafo) -> Optional[Dict[Any, Any]]:

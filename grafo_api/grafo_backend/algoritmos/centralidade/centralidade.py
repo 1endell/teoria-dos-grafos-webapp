@@ -9,7 +9,7 @@ centralidade de autovetor (eigenvector), PageRank e outras.
 import networkx as nx
 import numpy as np
 from typing import Dict, List, Any, Set, Tuple, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def centralidade_grau(grafo: Grafo) -> Dict[Any, float]:

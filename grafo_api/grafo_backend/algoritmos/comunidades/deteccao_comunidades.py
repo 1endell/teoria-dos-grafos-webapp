@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Tuple, Set, Optional
 import networkx as nx
 import numpy as np
 from collections import deque
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def girvan_newman(grafo: Grafo, num_comunidades: int = None) -> List[Set[Any]]:

@@ -7,7 +7,7 @@ Este script testa os algoritmos implementados para garantir que estão funcionan
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 # Importa os algoritmos implementados
 from algoritmos.caminhos.busca.busca import bfs, dfs, iddfs

@@ -8,7 +8,7 @@ com complexidade de tempo O(E * sqrt(V)), onde E é o número de arestas e V é 
 from typing import Dict, List, Any, Tuple, Set, Optional
 from collections import deque
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def hopcroft_karp(grafo: Grafo) -> Dict[Any, Any]:

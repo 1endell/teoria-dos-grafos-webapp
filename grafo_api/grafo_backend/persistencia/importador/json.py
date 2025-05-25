@@ -9,7 +9,7 @@ import networkx as nx
 import json
 import os
 from typing import Dict, List, Any, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def importar_json(caminho: str, nome: str = None) -> Optional[Grafo]:

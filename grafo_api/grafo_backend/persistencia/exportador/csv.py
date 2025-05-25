@@ -9,7 +9,7 @@ import networkx as nx
 import csv
 import os
 from typing import Dict, List, Any, Optional, Literal
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def exportar_csv_matriz_adjacencia(grafo: Grafo, caminho: str) -> bool:

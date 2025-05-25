@@ -9,7 +9,7 @@ detecção de padrões.
 import networkx as nx
 import numpy as np
 from typing import Dict, List, Any, Set, Tuple, Optional, Callable
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 import datetime
 
 
@@ -112,7 +112,7 @@ class GrafoDinamico:
         grafo_posterior = self.snapshots[posterior]
         
         # Cria um novo grafo para o resultado da interpolação
-        from core.grafo import Grafo
+        from grafo_backend.core.grafo import Grafo
         grafo_interpolado = Grafo(f"Interpolação em {timestamp}")
         
         # Obtém os grafos NetworkX subjacentes

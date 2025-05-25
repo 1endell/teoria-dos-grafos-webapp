@@ -8,7 +8,7 @@ que é uma ordenação linear dos vértices tal que para toda aresta (u, v), u v
 from typing import Dict, List, Any, Tuple, Set, Optional, Deque
 from collections import deque
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def kahn(grafo: Grafo) -> List[Any]:

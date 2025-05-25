@@ -8,7 +8,7 @@ permitindo comparações mesmo quando os grafos não são isomorfos.
 import networkx as nx
 import numpy as np
 from typing import Dict, List, Any, Optional, Set, Tuple
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def similaridade_estrutural(grafo1: Grafo, grafo2: Grafo) -> float:

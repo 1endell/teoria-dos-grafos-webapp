@@ -6,7 +6,7 @@ Este módulo contém funções para realizar operações de união, interseção
 
 import networkx as nx
 from typing import Dict, List, Any, Optional, Set, Tuple, Union
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def uniao_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:

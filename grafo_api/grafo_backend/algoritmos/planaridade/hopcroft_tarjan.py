@@ -7,7 +7,7 @@ O algoritmo de Hopcroft-Tarjan determina se um grafo é planar em tempo linear.
 
 from typing import Dict, List, Any, Tuple, Set, Optional
 import networkx as nx
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def hopcroft_tarjan(grafo: Grafo) -> bool:

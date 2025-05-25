@@ -7,7 +7,7 @@ máximos em grafos gerais, incluindo o algoritmo de Edmonds (Blossom).
 
 import networkx as nx
 from typing import Dict, List, Any, Set, Tuple, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def emparelhamento_maximo_geral(grafo: Grafo) -> Dict[Any, Any]:

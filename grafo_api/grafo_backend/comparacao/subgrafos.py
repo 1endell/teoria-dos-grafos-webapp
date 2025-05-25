@@ -7,7 +7,7 @@ e buscar padrões em grafos.
 
 import networkx as nx
 from typing import Dict, List, Any, Optional, Set, Tuple
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def verificar_subgrafo(grafo: Grafo, subgrafo: Grafo) -> bool:

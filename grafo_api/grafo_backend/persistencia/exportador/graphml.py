@@ -8,7 +8,7 @@ um formato baseado em XML para representação de grafos.
 import networkx as nx
 import os
 from typing import Dict, List, Any, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def exportar_graphml(grafo: Grafo, caminho: str) -> bool:

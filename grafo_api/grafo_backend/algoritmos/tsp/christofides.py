@@ -9,7 +9,7 @@ com pesos que satisfazem a desigualdade triangular.
 from typing import Dict, List, Any, Tuple, Set, Optional
 import networkx as nx
 import numpy as np
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def christofides(grafo: Grafo) -> Tuple[List[Any], float]:

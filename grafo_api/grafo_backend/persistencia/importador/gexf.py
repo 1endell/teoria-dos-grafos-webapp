@@ -8,7 +8,7 @@ um formato XML para representação de grafos, especialmente utilizado pelo soft
 import networkx as nx
 import os
 from typing import Dict, List, Any, Optional
-from core.grafo import Grafo
+from grafo_backend.core.grafo import Grafo
 
 
 def importar_gexf(caminho: str, nome: str = None) -> Optional[Grafo]:
