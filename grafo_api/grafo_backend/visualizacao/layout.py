@@ -45,6 +45,6 @@ def gerar_layout(grafo: Grafo, tipo_layout: str = 'spring') -> dict:
     return pos_serializavel
 
 # Adicionar outras funções de visualização se necessário, como visualizar_grafo
-# def visualizar_grafo(grafo: Grafo, layout: dict = None, arquivo: str = None):
-#     pass
+ def visualizar_grafo(grafo: Grafo, layout: dict = None, arquivo: str = None):
+     pass
 
