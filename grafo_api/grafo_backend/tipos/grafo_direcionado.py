@@ -2,7 +2,7 @@
 Implementação de tipos específicos de grafos.
 """
 
-from core import Grafo
+from ..core import Grafo
 import networkx as nx
 from typing import Dict, List, Any, Optional, Set, Tuple, Union
 

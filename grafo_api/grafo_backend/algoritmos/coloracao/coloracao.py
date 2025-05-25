@@ -7,7 +7,7 @@ incluindo algoritmos gulosos e o algoritmo de Welsh-Powell.
 
 import networkx as nx
 from typing import Dict, List, Any, Set, Tuple, Optional
-from core.grafo import Grafo
+from ...core.grafo import Grafo
 
 
 def coloracao_gulosa(grafo: Grafo, ordem_vertices: List[Any] = None) -> Dict[Any, int]:

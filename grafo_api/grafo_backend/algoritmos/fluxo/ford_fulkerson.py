@@ -9,7 +9,7 @@ aumentar o fluxo.
 from typing import Dict, List, Any, Optional, Tuple, Set
 import networkx as nx
 from collections import deque
-from core.grafo import Grafo
+from ...core.grafo import Grafo
 
 
 def bfs_caminho_aumento(grafo: nx.DiGraph, fonte: Any, sumidouro: Any, 

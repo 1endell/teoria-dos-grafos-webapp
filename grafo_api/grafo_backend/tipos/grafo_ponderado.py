@@ -7,7 +7,7 @@ funcionalidades específicas de grafos ponderados.
 
 import networkx as nx
 from typing import Dict, List, Any, Optional, Set, Tuple, Union
-from core.grafo import Grafo
+from ..core.grafo import Grafo
 
 
 class GrafoPonderado(Grafo):

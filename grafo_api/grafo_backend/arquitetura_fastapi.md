@@ -240,7 +240,7 @@ class GrafoService:
     def criar_grafo(self, nome: str, direcionado: bool = False, 
                    ponderado: bool = False, bipartido: bool = False) -> str:
         """Cria um novo grafo e retorna seu ID."""
-        from grafo_backend.core.grafo import Grafo
+        from grafo_backend.core import Grafo
         from grafo_backend.tipos import GrafoDirecionado, GrafoPonderado, GrafoBipartido
         
         # Criar o tipo apropriado de grafo

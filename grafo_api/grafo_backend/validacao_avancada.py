@@ -13,18 +13,18 @@ import tempfile
 # Adiciona o diretório pai ao path para importação dos módulos
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core import Grafo, Vertice, Aresta
-from tipos import GrafoDirecionado, GrafoPonderado, GrafoBipartido
-from algoritmos.caminhos import dijkstra, caminho_minimo
-from algoritmos.arvores import kruskal, arvore_geradora_minima
-from algoritmos.fluxo import ford_fulkerson, fluxo_maximo
-from operacoes import uniao_grafos, intersecao_grafos, diferenca_grafos
-from persistencia import (
+from .core import Grafo, Vertice, Aresta
+from .tipos import GrafoDirecionado, GrafoPonderado, GrafoBipartido
+from .algoritmos.caminhos import dijkstra, caminho_minimo
+from .algoritmos.arvores import kruskal, arvore_geradora_minima
+from .algoritmos.fluxo import ford_fulkerson, fluxo_maximo
+from .operacoes import uniao_grafos, intersecao_grafos, diferenca_grafos
+from .persistencia import (
     exportar_graphml, importar_graphml,
     exportar_json, importar_json,
     exportar_csv, importar_csv
 )
-from comparacao import (
+from .comparacao import (
     verificar_isomorfismo,
     similaridade_estrutural,
     verificar_subgrafo,

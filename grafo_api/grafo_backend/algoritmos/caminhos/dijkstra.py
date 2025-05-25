@@ -8,7 +8,7 @@ e todos os outros vértices em um grafo ponderado com pesos não-negativos.
 import heapq
 from typing import Dict, List, Any, Optional, Tuple, Set
 import networkx as nx
-from core.grafo import Grafo
+from ...core.grafo import Grafo
 
 
 def dijkstra(grafo: Grafo, origem: Any) -> Tuple[Dict[Any, float], Dict[Any, Any]]:

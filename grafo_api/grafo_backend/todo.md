@@ -1,62 +1,38 @@
-# Lista de Tarefas para o Backend de Teoria dos Grafos (Versão Avançada)
+# Lista de Tarefas - Implementação de Algoritmos de Teoria dos Grafos
 
-## Definição de Requisitos
-- [x] Definir requisitos funcionais do backend básico
-- [x] Definir requisitos não-funcionais básicos
-- [x] Instalar dependências necessárias (NetworkX, Matplotlib, SciPy)
-- [x] Definir requisitos avançados para expansão do backend
+## Algoritmos de Alta Prioridade
+- [x] Breadth-First Search (BFS) - Implementado em `algoritmos/caminhos/busca/busca.py`
+- [x] Depth-First Search (DFS) - Implementado em `algoritmos/caminhos/busca/busca.py`
+- [x] Iterative Deepening DFS (IDDFS) - Implementado em `algoritmos/caminhos/busca/busca.py`
+- [x] Bellman-Ford - Implementado em `algoritmos/caminhos/bellman_ford.py`
+- [x] Floyd-Warshall - Implementado em `algoritmos/caminhos/floyd_warshall.py`
+- [x] Tarjan - Implementado em `algoritmos/caminhos/tarjan.py`
+- [x] Algoritmo para Pontes e Articulações - Implementado em `algoritmos/caminhos/tarjan.py`
+- [x] Edmonds-Karp - Implementado em `algoritmos/fluxo/edmonds_karp.py`
 
-## Estrutura do Backend
-- [x] Projetar a arquitetura do backend
-- [x] Definir estrutura de módulos e classes
-- [x] Criar esqueleto inicial dos arquivos
-- [ ] Expandir estrutura para novos tipos de grafos
-- [ ] Expandir estrutura para algoritmos clássicos
-- [ ] Expandir estrutura para operações entre grafos
-- [ ] Expandir estrutura para persistência de grafos
-- [ ] Expandir estrutura para comparação de grafos
+## Algoritmos de Média Prioridade
+- [x] A* Algorithm - Implementado em `algoritmos/caminhos/a_star.py`
+- [x] Prim (Árvore Geradora Mínima) - Implementado em `algoritmos/arvores/prim.py`
+- [x] Hopcroft-Karp (Emparelhamento Máximo em Grafos Bipartidos) - Implementado em `algoritmos/emparelhamento/hopcroft_karp.py`
+- [x] Hungarian Algorithm (Atribuição Ótima) - Implementado em `algoritmos/emparelhamento/hungarian.py`
+- [x] Kahn's Algorithm (Ordenação Topológica) - Implementado em `algoritmos/ordenacao/kahn.py`
 
-## Implementação Básica
-- [x] Implementar funcionalidades básicas de criação de grafos
-- [x] Implementar operações com grafos
-- [x] Implementar algoritmos de análise
-- [x] Implementar visualização de grafos
+## Algoritmos de Baixa Prioridade
+- [x] Dinic's Algorithm (Fluxo Máximo) - Implementado em `algoritmos/fluxo/dinic.py`
+- [x] Hierholzer (Ciclo Euleriano) - Implementado em `algoritmos/ciclos/hierholzer.py`
+- [x] Algoritmos para Hamiltonianos - Implementado em `algoritmos/ciclos/hamiltoniano.py`
+- [x] Backtracking - Implementado como parte de vários algoritmos, incluindo `algoritmos/ciclos/hamiltoniano.py`
+- [x] Ullmann Algorithm (Isomorfismo de Subgrafos) - Implementado em `algoritmos/isomorfismo/ullmann.py`
+- [x] Hopcroft-Tarjan (Planaridade) - Implementado em `algoritmos/planaridade/hopcroft_tarjan.py`
+- [x] Christofides (Problema do Caixeiro Viajante) - Implementado em `algoritmos/tsp/christofides.py`
+- [x] Algoritmos Genéticos - Implementado em `algoritmos/tsp/christofides.py`
+- [x] Maximal Clique (Bron–Kerbosch) - Implementado em `algoritmos/cliques/bron_kerbosch.py`
+- [x] Girvan-Newman (Detecção de Comunidades) - Implementado em `algoritmos/comunidades/deteccao_comunidades.py`
+- [x] Louvain Method (Detecção de Comunidades) - Implementado em `algoritmos/comunidades/deteccao_comunidades.py`
 
-## Implementação Avançada
-- [ ] Implementar algoritmos de caminho mínimo (Dijkstra, Bellman-Ford, Floyd-Warshall)
-- [ ] Implementar algoritmos de árvore geradora mínima (Kruskal, Prim)
-- [ ] Implementar algoritmos de fluxo em redes (Ford-Fulkerson, Edmonds-Karp)
-- [ ] Implementar algoritmos de coloração e emparelhamento
-- [ ] Implementar grafos ponderados
-- [ ] Implementar grafos bipartidos
-- [ ] Implementar grafos planares e outros tipos especiais
-- [ ] Implementar operações de união, interseção e diferença entre grafos
-- [ ] Implementar operações avançadas (produto cartesiano, junção, composição)
-- [ ] Implementar persistência em formatos padrão (GraphML, GML, GEXF, JSON, CSV)
-- [ ] Implementar verificação de isomorfismo
-- [ ] Implementar métricas de similaridade entre grafos
-- [ ] Implementar funcionalidades de subgrafos e busca de padrões
-
-## Validação
-- [x] Verificar conformidade com a teoria dos grafos (básico)
-- [ ] Testar algoritmos clássicos implementados
-- [ ] Testar novos tipos de grafos
-- [ ] Testar operações entre grafos
-- [ ] Testar persistência em diferentes formatos
-- [ ] Testar comparação e isomorfismo de grafos
-- [ ] Validar conformidade teórica das implementações avançadas
-
-## Documentação
-- [x] Criar documentação da API básica
-- [x] Criar exemplos de uso básicos
-- [ ] Atualizar documentação com algoritmos clássicos
-- [ ] Atualizar documentação com novos tipos de grafos
-- [ ] Atualizar documentação com operações entre grafos
-- [ ] Atualizar documentação com persistência de grafos
-- [ ] Atualizar documentação com comparação de grafos
-- [ ] Criar exemplos avançados de uso
-
-## Entrega
-- [x] Entregar backend básico ao usuário
-- [ ] Finalizar backend avançado
-- [ ] Entregar backend avançado ao usuário com instruções de uso
+## Próximos Passos
+1. Implementar algoritmos de média prioridade
+2. Implementar algoritmos de baixa prioridade
+3. Validar todos os algoritmos implementados
+4. Atualizar documentação
+5. Integrar com a API FastAPI

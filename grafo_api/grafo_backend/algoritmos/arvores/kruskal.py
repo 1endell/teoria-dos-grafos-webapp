@@ -7,7 +7,7 @@ selecionando arestas em ordem crescente de peso e adicionando-as à árvore se n
 
 from typing import Dict, List, Any, Optional, Tuple, Set
 import networkx as nx
-from core.grafo import Grafo
+from ...core.grafo import Grafo
 
 
 class UnionFind:

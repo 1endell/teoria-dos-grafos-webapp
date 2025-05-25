@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 # Adiciona o diretório pai ao path para importação dos módulos
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core import Grafo
-from tipos import GrafoDirecionado
+from ..core import Grafo
+from ..tipos import GrafoDirecionado
 
 
 def exemplo_grafo_simples():

@@ -16,15 +16,19 @@ class Grafo:
     fidelidade à teoria dos grafos e fornecer uma API consistente.
     """
     
-    def __init__(self, nome: str = "Grafo"):
+    def __init__(self, nome: str = "Grafo", direcionado: bool = False):
         """
         Inicializa um novo grafo.
         
         Args:
             nome: Nome do grafo para identificação.
+            direcionado: Se True, cria um grafo direcionado. Se False, cria um grafo não direcionado.
         """
         self.nome = nome
-        self._grafo = nx.Graph()  # Grafo não direcionado por padrão
+        if direcionado:
+            self._grafo = nx.DiGraph()  # Grafo direcionado
+        else:
+            self._grafo = nx.Graph()  # Grafo não direcionado
         
     def adicionar_vertice(self, id_vertice: Any, atributos: Optional[Dict[str, Any]] = None) -> bool:
         """
@@ -288,6 +292,15 @@ class Grafo:
             return True
         return nx.is_connected(self._grafo)
         
+    def eh_direcionado(self) -> bool:
+        """
+        Verifica se o grafo é direcionado.
+        
+        Returns:
+            bool: True se o grafo for direcionado, False caso contrário.
+        """
+        return isinstance(self._grafo, nx.DiGraph)
+        
     def visualizar(self, titulo: Optional[str] = None, 
                   layout: str = "spring", 
                   tamanho_figura: Tuple[int, int] = (10, 8),
@@ -326,7 +339,14 @@ class Grafo:
         
         # Desenha o grafo
         nx.draw_networkx_nodes(self._grafo, pos, node_size=500, node_color='lightblue')
-        nx.draw_networkx_edges(self._grafo, pos, width=edge_weights, alpha=0.7)
+        
+        # Desenha as arestas com setas se for direcionado
+        if self.eh_direcionado():
+            nx.draw_networkx_edges(self._grafo, pos, width=edge_weights, alpha=0.7, 
+                                  arrowstyle='->', arrowsize=15)
+        else:
+            nx.draw_networkx_edges(self._grafo, pos, width=edge_weights, alpha=0.7)
+            
         nx.draw_networkx_labels(self._grafo, pos, font_size=12)
         
         # Adiciona rótulos de peso nas arestas
@@ -352,16 +372,16 @@ class Grafo:
         else:
             plt.close()
             
-    def obter_grafo_networkx(self) -> nx.Graph:
+    def obter_grafo_networkx(self) -> Union[nx.Graph, nx.DiGraph]:
         """
         Obtém o objeto NetworkX subjacente.
         
         Returns:
-            nx.Graph: Objeto NetworkX representando o grafo.
+            Union[nx.Graph, nx.DiGraph]: Objeto NetworkX representando o grafo.
         """
         return self._grafo
         
-    def definir_grafo_networkx(self, grafo: nx.Graph) -> None:
+    def definir_grafo_networkx(self, grafo: Union[nx.Graph, nx.DiGraph]) -> None:
         """
         Define o objeto NetworkX subjacente.
         
@@ -377,7 +397,8 @@ class Grafo:
         Returns:
             str: Descrição do grafo.
         """
-        return f"{self.nome}: {self.numero_vertices()} vértices, {self.numero_arestas()} arestas"
+        tipo = "direcionado" if self.eh_direcionado() else "não direcionado"
+        return f"{self.nome}: {self.numero_vertices()} vértices, {self.numero_arestas()} arestas, {tipo}"
         
     def __repr__(self) -> str:
         """
@@ -386,4 +407,4 @@ class Grafo:
         Returns:
             str: Representação do grafo.
         """
-        return f"Grafo(nome='{self.nome}')"
+        return f"Grafo(nome='{self.nome}', direcionado={self.eh_direcionado()})"
