@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional, Set, Tuple, Union
 from grafo_backend.core.grafo import Grafo
 
 
-def uniao_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
+def uniao(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
     """
     Realiza a união de dois grafos.
     
@@ -44,7 +44,7 @@ def uniao_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Gr
     return resultado
 
 
-def intersecao_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
+def intersecao(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
     """
     Realiza a interseção de dois grafos.
     
@@ -79,7 +79,7 @@ def intersecao_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) 
     return resultado
 
 
-def diferenca_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
+def diferenca(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
     """
     Realiza a diferença entre dois grafos.
     
@@ -119,7 +119,7 @@ def diferenca_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -
     return resultado
 
 
-def diferenca_simetrica_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
+def diferenca_simetrica(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
     """
     Realiza a diferença simétrica entre dois grafos.
     
@@ -162,7 +162,7 @@ def diferenca_simetrica_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str
     return resultado
 
 
-def composicao_grafos(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
+def composicao(grafo1: Grafo, grafo2: Grafo, nome_resultado: str = None) -> Grafo:
     """
     Realiza a composição de dois grafos.
     
