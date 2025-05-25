@@ -11,7 +11,7 @@ import os
 sys.path.append('/home/ubuntu')  # Adiciona o diretório raiz ao path
 from grafo_backend.core import Grafo
 from grafo_backend.comparacao.isomorfismo import verificar_isomorfismo, encontrar_mapeamento_isomorfismo
-from grafo_backend.comparacao.similaridade import calcular_similaridade_espectral, calcular_similaridade_estrutural
+from grafo_backend.comparacao.similaridade import similaridade_espectral, similaridade_estrutural
 from grafo_backend.comparacao.subgrafos import verificar_subgrafo, encontrar_ocorrencias_subgrafo
 
 
