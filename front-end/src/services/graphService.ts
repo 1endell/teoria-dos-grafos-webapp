@@ -1,7 +1,7 @@
 
 import { GrafoCreate, GrafoInfo, Grafo, VerticeCreate, ArestaCreate, DadosVisualizacao, ResultadoAlgoritmo } from '@/types/graph';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://api-grafos:8010';
 
 class GraphService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
