@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional, Tuple
 import sys
 import os
 sys.path.append('/home/ubuntu')  # Adiciona o diretório raiz ao path
-from grafo_backend.core.grafo import Grafo
+from grafo_backend.core import Grafo
 from grafo_backend.operacoes.combinacao import (
     uniao, intersecao, diferenca, diferenca_simetrica, composicao
 )

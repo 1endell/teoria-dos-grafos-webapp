@@ -21,7 +21,7 @@ from jinja2 import Environment, FileSystemLoader
 # Importações do backend de grafos
 import sys
 sys.path.append('/home/ubuntu')  # Adiciona o diretório raiz ao path
-from grafo_backend.core.grafo import Grafo
+from grafo_backend.core import Grafo
 from grafo_backend.visualizacao import gerar_layout, visualizar_grafo
 
 
