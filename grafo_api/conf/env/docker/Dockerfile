@@ -1,20 +1,16 @@
-# grafo_api/conf/env/docker/Dockerfile
-
-FROM python:3.9-slim
-
 WORKDIR /app
 
-# Copia primeiro o requirements.txt
-COPY ./requirements.txt .
+# Copia os requirements primeiro
+COPY requirements.txt .
 
-# Instala dependências
+# Instala dependências principais
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia TODO o conteúdo do grafo_api (incluindo grafo_backend)
+# Copia todo o conteúdo
 COPY . .
 
-# Configura o Python Path
-ENV PYTHONPATH="${PYTHONPATH}:/app/grafo_backend"
+# Instala o grafo_backend como pacote editável
+RUN pip install -e .
 
 EXPOSE 8000
 
