@@ -10,6 +10,15 @@ services:
     networks:
       - grafos_network
 
+  front-end-grafos:
+    build:
+      context: ./front-end
+      dockerfile: conf/env/docker/Dockerfile
+    ports:
+      - "5177:80"
+    networks:
+      - grafos_network
+    restart: unless-stopped
 
 networks:
   grafos_network:
