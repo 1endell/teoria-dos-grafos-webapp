@@ -24,7 +24,20 @@ class GraphService {
   }
 
   private generateSessionId(): string {
-    const sessionId = crypto.randomUUID();
+    let sessionId: string;
+    
+    // Verifica se crypto.randomUUID está disponível (HTTPS ou localhost)
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      sessionId = crypto.randomUUID();
+    } else {
+      // Fallback para ambientes onde crypto.randomUUID não está disponível
+      sessionId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    
     localStorage.setItem('graph-session-id', sessionId);
     return sessionId;
   }
