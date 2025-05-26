@@ -1,6 +1,6 @@
 import { GrafoCreate, GrafoInfo, Grafo, VerticeCreate, ArestaCreate, DadosVisualizacao, ResultadoAlgoritmo, OperacaoGrafos, ComparacaoGrafos, ResultadoComparacao, ImportacaoGrafo, ExportacaoGrafo } from '@/types/graph';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://161.35.229.111:8010';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://grafos-api.datasortingmachine.com';
 
 class GraphService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
