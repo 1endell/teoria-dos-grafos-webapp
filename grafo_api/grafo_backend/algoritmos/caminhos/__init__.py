@@ -1,7 +1,5 @@
 """
-Módulo de inicialização para algoritmos de caminhos mínimos.
+Módulo de algoritmos de caminhos.
 """
 
-from .dijkstra import dijkstra, caminho_minimo, reconstruir_caminho
-
-__all__ = ['dijkstra', 'caminho_minimo', 'reconstruir_caminho']
+from .dijkstra import dijkstra

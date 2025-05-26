@@ -1,360 +1,132 @@
 """
-Middleware para gerenciamento de sessões no FastAPI.
-
-Este módulo implementa o middleware de sessão para garantir isolamento
-de dados entre usuários simultâneos sem necessidade de login.
+Gerenciamento de sessão e serviços compartilhados.
 """
 
-import time
-import secrets
-from typing import Dict, Any, Optional
+import logging
+from typing import Dict, Any
+import threading
 
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
+from app.services.grafo_service import GrafoService
+from app.services.algoritmo_service import AlgoritmoService
+from app.services.operacao_service import OperacaoService
+from app.services.comparacao_service import ComparacaoService
+from app.services.persistencia_service import PersistenciaService
+from app.services.visualizacao_service import VisualizacaoService
 
+# Configuração de logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
-class SessionManager:
+# Lock para garantir thread-safety na criação de serviços
+_services_lock = threading.RLock()
+
+# Dicionário para armazenar as instâncias dos serviços
+_services = {}
+
+def _get_or_create_service(service_class, *args, **kwargs):
     """
-    Gerenciador de sessões para isolamento de dados entre usuários.
+    Obtém ou cria uma instância de serviço, garantindo que seja um singleton.
+    
+    Args:
+        service_class: Classe do serviço.
+        *args: Argumentos posicionais para o construtor do serviço.
+        **kwargs: Argumentos nomeados para o construtor do serviço.
+        
+    Returns:
+        Instância do serviço.
     """
+    service_name = service_class.__name__
     
-    def __init__(self, expiration_time: int = 86400):  # 24 horas em segundos
-        """
-        Inicializa o gerenciador de sessões.
+    # Usa lock para garantir thread-safety
+    with _services_lock:
+        if service_name not in _services:
+            logger.debug(f"Criando nova instância de {service_name}")
+            _services[service_name] = service_class(*args, **kwargs)
+        else:
+            logger.debug(f"Reutilizando instância existente de {service_name}")
         
-        Args:
-            expiration_time: Tempo de expiração das sessões em segundos
-        """
-        self.expiration_time = expiration_time
-        self.active_sessions = {}  # Mapa de sessões ativas: session_id -> dados da sessão
+        # Registra o ID da instância para diagnóstico
+        logger.debug(f"ID da instância de {service_name}: {id(_services[service_name])}")
     
-    def create_session(self) -> str:
-        """
-        Cria uma nova sessão e retorna o token.
-        
-        Returns:
-            str: Token de sessão gerado
-        """
-        session_id = self._generate_secure_token()
-        self.active_sessions[session_id] = {
-            "created_at": time.time(),
-            "last_activity": time.time(),
-            "data": {}  # Dados específicos da sessão
+    return _services[service_name]
+
+def get_grafo_service() -> GrafoService:
+    """Retorna a instância compartilhada do serviço de grafos."""
+    return _get_or_create_service(GrafoService)
+
+def get_algoritmo_service() -> AlgoritmoService:
+    """Retorna a instância compartilhada do serviço de algoritmos."""
+    grafo_service = get_grafo_service()
+    return _get_or_create_service(AlgoritmoService, grafo_service)
+
+def get_operacao_service() -> OperacaoService:
+    """Retorna a instância compartilhada do serviço de operações."""
+    grafo_service = get_grafo_service()
+    return _get_or_create_service(OperacaoService, grafo_service)
+
+def get_comparacao_service() -> ComparacaoService:
+    """Retorna a instância compartilhada do serviço de comparação."""
+    grafo_service = get_grafo_service()
+    return _get_or_create_service(ComparacaoService, grafo_service)
+
+def get_persistencia_service() -> PersistenciaService:
+    """Retorna a instância compartilhada do serviço de persistência."""
+    grafo_service = get_grafo_service()
+    return _get_or_create_service(PersistenciaService, grafo_service)
+
+def get_visualizacao_service() -> VisualizacaoService:
+    """Retorna a instância compartilhada do serviço de visualização."""
+    grafo_service = get_grafo_service()
+    return _get_or_create_service(VisualizacaoService, grafo_service)
+
+# Inicializa os serviços para garantir que estejam disponíveis
+# Isso garante que os serviços sejam criados uma única vez na inicialização do módulo
+with _services_lock:
+    if not _services:
+        logger.debug("Inicializando serviços na carga do módulo")
+        grafo_service = get_grafo_service()
+        algoritmo_service = get_algoritmo_service()
+        operacao_service = get_operacao_service()
+        comparacao_service = get_comparacao_service()
+        persistencia_service = get_persistencia_service()
+        visualizacao_service = get_visualizacao_service()
+        logger.debug(f"Serviços inicializados: {list(_services.keys())}")
+
+# Função para depuração e diagnóstico
+def debug_services_state() -> Dict[str, Any]:
+    """
+    Retorna o estado atual dos serviços para depuração.
+    
+    Returns:
+        Dict[str, Any]: Estado dos serviços.
+    """
+    with _services_lock:
+        grafo_service = get_grafo_service()
+        state = {
+            "services_count": len(_services),
+            "services": list(_services.keys()),
+            "grafo_service_id": id(grafo_service),
+            "grafo_service_grafos_count": len(grafo_service.grafos) if "GrafoService" in _services else 0,
+            "grafo_ids": list(grafo_service.grafos.keys()) if "GrafoService" in _services else []
         }
-        return session_id
-    
-    def validate_session(self, session_id: str) -> bool:
-        """
-        Valida um token de sessão e atualiza o timestamp de atividade.
         
-        Args:
-            session_id: Token de sessão a ser validado
-            
-        Returns:
-            bool: True se a sessão é válida, False caso contrário
-        """
-        if session_id not in self.active_sessions:
-            return False
-            
-        session = self.active_sessions[session_id]
-        current_time = time.time()
-        
-        # Verifica se a sessão expirou
-        if current_time - session["last_activity"] > self.expiration_time:
-            self.delete_session(session_id)
-            return False
-            
-        # Atualiza o timestamp de última atividade
-        session["last_activity"] = current_time
-        return True
-    
-    def delete_session(self, session_id: str) -> None:
-        """
-        Remove uma sessão e seus dados associados.
-        
-        Args:
-            session_id: Token de sessão a ser removido
-        """
-        if session_id in self.active_sessions:
-            del self.active_sessions[session_id]
-    
-    def get_session_data(self, session_id: str, key: str, default: Any = None) -> Any:
-        """
-        Obtém um dado específico da sessão.
-        
-        Args:
-            session_id: Token de sessão
-            key: Chave do dado
-            default: Valor padrão se a chave não existir
-            
-        Returns:
-            Any: Valor associado à chave ou o valor padrão
-        """
-        if not self.validate_session(session_id):
-            return default
-            
-        return self.active_sessions[session_id]["data"].get(key, default)
-    
-    def set_session_data(self, session_id: str, key: str, value: Any) -> bool:
-        """
-        Define um dado específico na sessão.
-        
-        Args:
-            session_id: Token de sessão
-            key: Chave do dado
-            value: Valor a ser armazenado
-            
-        Returns:
-            bool: True se o dado foi armazenado, False caso contrário
-        """
-        if not self.validate_session(session_id):
-            return False
-            
-        self.active_sessions[session_id]["data"][key] = value
-        return True
-    
-    def get_all_sessions(self) -> Dict[str, Dict[str, Any]]:
-        """
-        Obtém todas as sessões ativas.
-        
-        Returns:
-            Dict[str, Dict[str, Any]]: Mapa de sessões ativas
-        """
-        return self.active_sessions
-    
-    def cleanup_expired_sessions(self) -> int:
-        """
-        Remove sessões expiradas.
-        
-        Returns:
-            int: Número de sessões removidas
-        """
-        current_time = time.time()
-        expired_sessions = []
-        
-        for session_id, session in self.active_sessions.items():
-            if current_time - session["last_activity"] > self.expiration_time:
-                expired_sessions.append(session_id)
-        
-        for session_id in expired_sessions:
-            self.delete_session(session_id)
-        
-        return len(expired_sessions)
-    
-    def _generate_secure_token(self) -> str:
-        """
-        Gera um token seguro e único.
-        
-        Returns:
-            str: Token gerado
-        """
-        return secrets.token_urlsafe(32)  # 32 bytes = 256 bits
+        logger.debug(f"Estado atual dos serviços: {state}")
+        return state
 
-
-class SessionMiddleware(BaseHTTPMiddleware):
+# Função para limpar o estado dos serviços (útil para testes)
+def reset_services_state():
     """
-    Middleware para gerenciamento de sessões no FastAPI.
+    Limpa o estado de todos os serviços.
+    Útil para testes que precisam de um estado limpo.
     """
-    
-    def __init__(self, app, session_manager: SessionManager):
-        """
-        Inicializa o middleware de sessão.
+    with _services_lock:
+        # Desativando a limpeza de estado para manter persistência entre testes
+        logger.debug("Função reset_services_state chamada, mas desativada para manter persistência entre testes")
+        # Comentado para manter persistência entre testes
+        # if "GrafoService" in _services:
+        #     grafo_service = _services["GrafoService"]
+        #     grafo_service.grafos.clear()
+        #     grafo_service.metadados.clear()
+        #     logger.debug("Estado do GrafoService limpo")
         
-        Args:
-            app: Aplicação FastAPI
-            session_manager: Gerenciador de sessões
-        """
-        super().__init__(app)
-        self.session_manager = session_manager
-    
-    async def dispatch(self, request: Request, call_next) -> Response:
-        """
-        Processa a requisição e gerencia a sessão.
-        
-        Args:
-            request: Requisição HTTP
-            call_next: Função para chamar o próximo middleware
-            
-        Returns:
-            Response: Resposta HTTP
-        """
-        # Tenta obter o token de sessão do cookie
-        session_id = request.cookies.get("session_id")
-        
-        # Se não existir ou for inválido, cria uma nova sessão
-        is_new_session = False
-        if not session_id or not self.session_manager.validate_session(session_id):
-            session_id = self.session_manager.create_session()
-            is_new_session = True
-        
-        # Adiciona o ID da sessão ao estado da requisição
-        request.state.session_id = session_id
-        request.state.is_new_session = is_new_session
-        
-        # Processa a requisição
-        response = await call_next(request)
-        
-        # Se for uma nova sessão, define o cookie
-        if is_new_session:
-            response.set_cookie(
-                key="session_id",
-                value=session_id,
-                httponly=True,
-                max_age=self.session_manager.expiration_time,
-                samesite="lax"
-            )
-        
-        return response
-
-
-class SessionStorage:
-    """
-    Armazenamento de dados por sessão.
-    """
-    
-    def __init__(self, cleanup_interval: int = 3600):  # Limpeza a cada hora
-        """
-        Inicializa o armazenamento de sessão.
-        
-        Args:
-            cleanup_interval: Intervalo de limpeza em segundos
-        """
-        self.storage = {}  # session_id -> {tipo_dados -> {id -> dados}}
-        self.cleanup_interval = cleanup_interval
-        self.last_cleanup = time.time()
-    
-    def store_data(self, session_id: str, data_type: str, data_id: str, data: Any) -> bool:
-        """
-        Armazena dados associados a uma sessão.
-        
-        Args:
-            session_id: ID da sessão
-            data_type: Tipo de dados (ex: "grafos", "projetos")
-            data_id: ID dos dados
-            data: Dados a serem armazenados
-            
-        Returns:
-            bool: True se os dados foram armazenados com sucesso
-        """
-        self._ensure_session_exists(session_id, data_type)
-        self.storage[session_id][data_type][data_id] = data
-        return True
-    
-    def get_data(self, session_id: str, data_type: str, data_id: str) -> Optional[Any]:
-        """
-        Recupera dados associados a uma sessão.
-        
-        Args:
-            session_id: ID da sessão
-            data_type: Tipo de dados
-            data_id: ID dos dados
-            
-        Returns:
-            Optional[Any]: Dados recuperados ou None se não encontrados
-        """
-        if not self._session_has_data(session_id, data_type, data_id):
-            return None
-        return self.storage[session_id][data_type][data_id]
-    
-    def list_data(self, session_id: str, data_type: str) -> Dict[str, Any]:
-        """
-        Lista todos os dados de um tipo associados a uma sessão.
-        
-        Args:
-            session_id: ID da sessão
-            data_type: Tipo de dados
-            
-        Returns:
-            Dict[str, Any]: Mapa de IDs para dados
-        """
-        self._ensure_session_exists(session_id, data_type)
-        return self.storage[session_id][data_type]
-    
-    def delete_data(self, session_id: str, data_type: str, data_id: str) -> bool:
-        """
-        Remove dados associados a uma sessão.
-        
-        Args:
-            session_id: ID da sessão
-            data_type: Tipo de dados
-            data_id: ID dos dados
-            
-        Returns:
-            bool: True se os dados foram removidos com sucesso
-        """
-        if not self._session_has_data(session_id, data_type, data_id):
-            return False
-        del self.storage[session_id][data_type][data_id]
-        return True
-    
-    def clear_session_data(self, session_id: str) -> bool:
-        """
-        Remove todos os dados associados a uma sessão.
-        
-        Args:
-            session_id: ID da sessão
-            
-        Returns:
-            bool: True se os dados foram removidos com sucesso
-        """
-        if session_id in self.storage:
-            del self.storage[session_id]
-            return True
-        return False
-    
-    def cleanup_expired_sessions(self, session_manager: SessionManager) -> int:
-        """
-        Remove dados de sessões expiradas.
-        
-        Args:
-            session_manager: Gerenciador de sessões para verificar sessões ativas
-            
-        Returns:
-            int: Número de sessões limpas
-        """
-        current_time = time.time()
-        if current_time - self.last_cleanup < self.cleanup_interval:
-            return 0
-            
-        self.last_cleanup = current_time
-        active_sessions = set(session_manager.active_sessions.keys())
-        stored_sessions = set(self.storage.keys())
-        
-        # Encontra sessões no armazenamento que não estão mais ativas
-        expired_sessions = stored_sessions - active_sessions
-        
-        # Remove dados de sessões expiradas
-        for session_id in expired_sessions:
-            self.clear_session_data(session_id)
-        
-        return len(expired_sessions)
-    
-    def _ensure_session_exists(self, session_id: str, data_type: str) -> None:
-        """
-        Garante que a estrutura de armazenamento para a sessão existe.
-        
-        Args:
-            session_id: ID da sessão
-            data_type: Tipo de dados
-        """
-        if session_id not in self.storage:
-            self.storage[session_id] = {}
-        
-        if data_type not in self.storage[session_id]:
-            self.storage[session_id][data_type] = {}
-    
-    def _session_has_data(self, session_id: str, data_type: str, data_id: str) -> bool:
-        """
-        Verifica se dados específicos existem na sessão.
-        
-        Args:
-            session_id: ID da sessão
-            data_type: Tipo de dados
-            data_id: ID dos dados
-            
-        Returns:
-            bool: True se os dados existem
-        """
-        return (session_id in self.storage and 
-                data_type in self.storage[session_id] and
-                data_id in self.storage[session_id][data_type])
+        logger.debug("Estado dos serviços mantido para persistência entre testes")

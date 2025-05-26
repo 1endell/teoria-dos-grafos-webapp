@@ -1,8 +1,13 @@
 """
-Módulo de algoritmos para teste de planaridade em grafos.
+Módulo de algoritmos de planaridade em grafos.
 
-Este módulo contém implementações de algoritmos para verificar se um grafo é planar,
-como o algoritmo de Hopcroft-Tarjan.
+Este módulo contém implementações de algoritmos para verificar planaridade de grafos,
+detectar subgrafos de Kuratowski e calcular faces em grafos planares.
 """
 
-from algoritmos.planaridade.hopcroft_tarjan import hopcroft_tarjan, encontrar_embedding_planar, encontrar_subgrafo_kuratowski, calcular_genus
+# Importações absolutas para garantir compatibilidade
+from grafo_backend.algoritmos.planaridade.planaridade import (
+    verificar_planaridade,
+    detectar_subgrafo_kuratowski,
+    calcular_faces
+)

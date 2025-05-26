@@ -29,7 +29,7 @@ class Vertice(VerticeBase):
     grau: int = 0
     
     class Config:
-        orm_mode = True
+        from_attributes = True # Atualizado de orm_mode
 
 
 class ArestaBase(BaseModel):
@@ -55,7 +55,7 @@ class Aresta(ArestaBase):
     """Modelo completo de aresta."""
     
     class Config:
-        orm_mode = True
+        from_attributes = True # Atualizado de orm_mode
 
 
 class GrafoBase(BaseModel):
@@ -91,7 +91,7 @@ class Grafo(GrafoBase):
     arestas: List[Aresta] = Field(default_factory=list)
     
     class Config:
-        orm_mode = True
+        from_attributes = True # Atualizado de orm_mode
 
 
 class GrafoInfo(BaseModel):
@@ -119,6 +119,26 @@ class AlgoritmoParams(BaseModel):
 
 
 class ResultadoAlgoritmo(BaseModel):
+    """Modelo para resultado de algoritmos."""
+    algoritmo: str
+    grafo_id: str
+    resultado: Dict[str, Any]
+    tempo_execucao: float  # em segundos
+
+
+# Adicionado o schema AlgoritmoInfo
+class AlgoritmoInfo(BaseModel):
+    """Modelo para informações de um algoritmo."""
+    id: str
+    nome: str
+    categoria: str
+    descricao: str
+    parametros_obrigatorios: List[str] = Field(default_factory=list)
+    parametros_opcionais: List[str] = Field(default_factory=list)
+
+
+# Adicionado o schema AlgoritmoResultado (renomeado de ResultadoAlgoritmo para manter consistência)
+class AlgoritmoResultado(BaseModel):
     """Modelo para resultado de algoritmos."""
     algoritmo: str
     grafo_id: str

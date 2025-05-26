@@ -1,7 +1,6 @@
+import { GrafoCreate, GrafoInfo, Grafo, VerticeCreate, ArestaCreate, DadosVisualizacao, ResultadoAlgoritmo, OperacaoGrafos, ComparacaoGrafos, ResultadoComparacao, ImportacaoGrafo, ExportacaoGrafo } from '@/types/graph';
 
-import { GrafoCreate, GrafoInfo, Grafo, VerticeCreate, ArestaCreate, DadosVisualizacao, ResultadoAlgoritmo } from '@/types/graph';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://api-grafos:8010';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://161.35.229.111:8010';
 
 class GraphService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -42,6 +41,7 @@ class GraphService {
     return sessionId;
   }
 
+  // ===== GRAFOS =====
   async criarGrafo(grafo: GrafoCreate): Promise<GrafoInfo> {
     return this.request<GrafoInfo>('/api/v1/grafos/', {
       method: 'POST',
@@ -89,18 +89,133 @@ class GraphService {
     });
   }
 
-  async obterVisualizacao(grafoId: string, layout = 'spring'): Promise<DadosVisualizacao> {
-    return this.request<DadosVisualizacao>(`/api/v1/visualizacao/${grafoId}?layout=${layout}`);
+  // ===== VISUALIZAÇÃO =====
+  async listarLayouts(): Promise<string[]> {
+    return this.request<string[]>('/api/v1/visualizacao/layouts');
   }
 
+  async obterVisualizacao(grafoId: string, layout = 'spring', incluirAtributos = true): Promise<DadosVisualizacao> {
+    return this.request<DadosVisualizacao>(`/api/v1/visualizacao/${grafoId}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        layout,
+        incluir_atributos: incluirAtributos
+      })
+    });
+  }
+
+  // ===== ALGORITMOS =====
   async listarAlgoritmos(): Promise<any[]> {
     return this.request<any[]>('/api/v1/algoritmos/');
   }
 
+  async listarAlgorimosPorCategoria(categoria: string): Promise<any[]> {
+    return this.request<any[]>(`/api/v1/algoritmos/categoria/${categoria}`);
+  }
+
+  async obterAlgoritmo(algoritmoId: string): Promise<any> {
+    return this.request<any>(`/api/v1/algoritmos/algoritmo/${algoritmoId}`);
+  }
+
   async executarAlgoritmo(algoritmoId: string, grafoId: string, parametros = {}): Promise<ResultadoAlgoritmo> {
-    return this.request<ResultadoAlgoritmo>(`/api/v1/algoritmos/${algoritmoId}/${grafoId}`, {
+    return this.request<ResultadoAlgoritmo>(`/api/v1/algoritmos/executar/${algoritmoId}/${grafoId}`, {
       method: 'POST',
       body: JSON.stringify({ parametros }),
+    });
+  }
+
+  // ===== OPERAÇÕES =====
+  async unirGrafos(grafoId1: string, grafoId2: string, nomeResultado?: string): Promise<GrafoInfo> {
+    return this.request<GrafoInfo>('/api/v1/operacoes/uniao', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2,
+        nome_resultado: nomeResultado
+      }),
+    });
+  }
+
+  async intersecaoGrafos(grafoId1: string, grafoId2: string, nomeResultado?: string): Promise<GrafoInfo> {
+    return this.request<GrafoInfo>('/api/v1/operacoes/intersecao', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2,
+        nome_resultado: nomeResultado
+      }),
+    });
+  }
+
+  async diferencaGrafos(grafoId1: string, grafoId2: string, nomeResultado?: string): Promise<GrafoInfo> {
+    return this.request<GrafoInfo>('/api/v1/operacoes/diferenca', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2,
+        nome_resultado: nomeResultado
+      }),
+    });
+  }
+
+  // ===== COMPARAÇÃO =====
+  async verificarIsomorfismo(grafoId1: string, grafoId2: string): Promise<ResultadoComparacao> {
+    return this.request<ResultadoComparacao>('/api/v1/comparacao/isomorfismo', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2
+      }),
+    });
+  }
+
+  async calcularSimilaridade(grafoId1: string, grafoId2: string): Promise<ResultadoComparacao> {
+    return this.request<ResultadoComparacao>('/api/v1/comparacao/similaridade', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2
+      }),
+    });
+  }
+
+  async verificarSubgrafo(grafoId1: string, grafoId2: string): Promise<ResultadoComparacao> {
+    return this.request<ResultadoComparacao>('/api/v1/comparacao/subgrafo', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2
+      }),
+    });
+  }
+
+  // ===== PERSISTÊNCIA =====
+  async exportarGrafo(grafoId: string, formato = 'json'): Promise<any> {
+    return this.request<any>(`/api/v1/persistencia/${grafoId}/exportar?formato=${formato}`);
+  }
+
+  async exportarGrafoArquivo(grafoId: string, formato = 'json'): Promise<Blob> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/persistencia/${grafoId}/exportar/arquivo?formato=${formato}`, {
+      headers: {
+        'X-Session-ID': localStorage.getItem('graph-session-id') || this.generateSessionId(),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.blob();
+  }
+
+  async importarGrafo(nome: string, formato: string, conteudo: string): Promise<GrafoInfo> {
+    return this.request<GrafoInfo>('/api/v1/persistencia/importar', {
+      method: 'POST',
+      body: JSON.stringify({
+        nome,
+        formato,
+        conteudo
+      }),
     });
   }
 }

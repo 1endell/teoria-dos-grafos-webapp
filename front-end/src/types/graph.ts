@@ -72,3 +72,34 @@ export interface ResultadoAlgoritmo {
   resultado: Record<string, any>;
   tempo_execucao: number;
 }
+
+export interface OperacaoGrafos {
+  grafo_id1: string;
+  grafo_id2: string;
+  nome_resultado?: string;
+}
+
+export interface ComparacaoGrafos {
+  grafo_id1: string;
+  grafo_id2: string;
+}
+
+export interface ResultadoComparacao {
+  grafo_id1: string;
+  grafo_id2: string;
+  metrica: string;
+  resultado: boolean | number;
+  tempo_execucao: number;
+}
+
+export interface ImportacaoGrafo {
+  nome: string;
+  formato: string;
+  conteudo: string;
+}
+
+export interface ExportacaoGrafo {
+  grafo_id: string;
+  formato: string;
+  conteudo: string;
+}

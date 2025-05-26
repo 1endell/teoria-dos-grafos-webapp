@@ -22,7 +22,103 @@ const Dashboard: React.FC = () => {
     ponderado: false,
     bipartido: false,
   });
+  const [importData, setImportData] = useState({
+    nome: '',
+    formato: 'json',
+    conteudo: ''
+  });
+  const [exportData, setExportData] = useState({
+    grafoId: '',
+    formato: 'json'
+  });
   const { toast } = useToast();
+
+  // Funções para importação e exportação
+  const handleImport = async () => {
+    if (!importData.nome.trim()) {
+      toast({
+        title: "Erro",
+        description: "O nome do grafo é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!importData.conteudo.trim()) {
+      toast({
+        title: "Erro",
+        description: "O conteúdo do grafo é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const grafoImportado = await graphService.importarGrafo(
+        importData.nome,
+        importData.formato,
+        btoa(importData.conteudo) // Codifica em base64
+      );
+      
+      toast({
+        title: "Sucesso",
+        description: `Grafo "${grafoImportado.nome}" importado com sucesso!`,
+      });
+      
+      loadGrafos();
+      setImportData({
+        nome: '',
+        formato: 'json',
+        conteudo: ''
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível importar o grafo. Verifique o formato e o conteúdo.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExport = async () => {
+    if (!exportData.grafoId) {
+      toast({
+        title: "Erro",
+        description: "Selecione um grafo para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const resultado = await graphService.exportarGrafo(exportData.grafoId, exportData.formato);
+      
+      // Decodifica o conteúdo de base64
+      const conteudo = atob(resultado.conteudo);
+      
+      // Cria um blob e um link para download
+      const blob = new Blob([conteudo], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `grafo_${exportData.grafoId}.${exportData.formato}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Sucesso",
+        description: "Grafo exportado com sucesso!",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível exportar o grafo.",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     loadGrafos();
@@ -117,14 +213,112 @@ const Dashboard: React.FC = () => {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 mt-4 lg:mt-0">
-          <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-            <Upload className="mr-2 h-4 w-4" />
-            Importar
-          </Button>
-          <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                <Upload className="mr-2 h-4 w-4" />
+                Importar
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Importar Grafo</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="nome-import">Nome do Grafo</Label>
+                  <Input
+                    id="nome-import"
+                    placeholder="Digite o nome do grafo"
+                    value={importData.nome}
+                    onChange={(e) => setImportData({...importData, nome: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="formato">Formato</Label>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={importData.formato}
+                    onChange={(e) => setImportData({...importData, formato: e.target.value})}
+                  >
+                    <option value="json">JSON</option>
+                    <option value="graphml">GraphML</option>
+                    <option value="gml">GML</option>
+                    <option value="gexf">GEXF</option>
+                    <option value="csv">CSV</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="conteudo">Conteúdo</Label>
+                  <textarea 
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Cole o conteúdo do grafo aqui"
+                    value={importData.conteudo}
+                    onChange={(e) => setImportData({...importData, conteudo: e.target.value})}
+                  />
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button variant="outline">
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleImport}>
+                    Importar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
+                <Download className="mr-2 h-4 w-4" />
+                Exportar
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Exportar Grafo</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="grafo-export">Selecione o Grafo</Label>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={exportData.grafoId}
+                    onChange={(e) => setExportData({...exportData, grafoId: e.target.value})}
+                  >
+                    <option value="">Selecione um grafo</option>
+                    {grafos.map(grafo => (
+                      <option key={grafo.id} value={grafo.id}>{grafo.nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="formato-export">Formato</Label>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={exportData.formato}
+                    onChange={(e) => setExportData({...exportData, formato: e.target.value})}
+                  >
+                    <option value="json">JSON</option>
+                    <option value="graphml">GraphML</option>
+                    <option value="gml">GML</option>
+                    <option value="gexf">GEXF</option>
+                    <option value="csv">CSV</option>
+                  </select>
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button variant="outline">
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleExport}>
+                    Exportar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">

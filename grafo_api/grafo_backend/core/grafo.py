@@ -65,15 +65,15 @@ class Grafo:
             ValueError: Se algum dos vértices não existir no grafo.
         """
         if origem not in self._grafo.nodes:
-            raise ValueError(f"Vértice de origem '{origem}' não existe no grafo.")
+            raise ValueError(f"Vértice de origem \'{origem}\' não existe no grafo.")
         if destino not in self._grafo.nodes:
-            raise ValueError(f"Vértice de destino '{destino}' não existe no grafo.")
+            raise ValueError(f"Vértice de destino \'{destino}\' não existe no grafo.")
             
         if self._grafo.has_edge(origem, destino):
             return False
             
         attr = atributos or {}
-        attr['weight'] = peso
+        attr["weight"] = peso
         self._grafo.add_edge(origem, destino, **attr)
         return True
         
@@ -142,9 +142,26 @@ class Grafo:
             ValueError: Se o vértice não existir no grafo.
         """
         if id_vertice not in self._grafo.nodes:
-            raise ValueError(f"Vértice '{id_vertice}' não existe no grafo.")
+            raise ValueError(f"Vértice \'{id_vertice}\' não existe no grafo.")
             
         return dict(self._grafo.nodes[id_vertice])
+
+    def definir_atributos_vertice(self, id_vertice: Any, atributos: Dict[str, Any]) -> None:
+        """
+        Define os atributos de um vértice.
+
+        Args:
+            id_vertice: Identificador do vértice.
+            atributos: Dicionário de atributos a serem definidos.
+
+        Raises:
+            ValueError: Se o vértice não existir no grafo.
+        """
+        if id_vertice not in self._grafo.nodes:
+            raise ValueError(f"Vértice \'{id_vertice}\' não existe no grafo.")
+
+        # Atualiza os atributos existentes com os novos
+        self._grafo.nodes[id_vertice].update(atributos)
         
     def obter_atributos_aresta(self, origem: Any, destino: Any) -> Dict[str, Any]:
         """
@@ -164,6 +181,24 @@ class Grafo:
             raise ValueError(f"Aresta ({origem}, {destino}) não existe no grafo.")
             
         return dict(self._grafo.edges[origem, destino])
+
+    def definir_atributos_aresta(self, origem: Any, destino: Any, atributos: Dict[str, Any]) -> None:
+        """
+        Define os atributos de uma aresta.
+
+        Args:
+            origem: Identificador do vértice de origem.
+            destino: Identificador do vértice de destino.
+            atributos: Dicionário de atributos a serem definidos.
+
+        Raises:
+            ValueError: Se a aresta não existir no grafo.
+        """
+        if not self._grafo.has_edge(origem, destino):
+            raise ValueError(f"Aresta ({origem}, {destino}) não existe no grafo.")
+
+        # Atualiza os atributos existentes com os novos
+        self._grafo.edges[origem, destino].update(atributos)
         
     def obter_peso_aresta(self, origem: Any, destino: Any) -> float:
         """
@@ -182,7 +217,24 @@ class Grafo:
         if not self._grafo.has_edge(origem, destino):
             raise ValueError(f"Aresta ({origem}, {destino}) não existe no grafo.")
             
-        return self._grafo.edges[origem, destino].get('weight', 1.0)
+        return self._grafo.edges[origem, destino].get("weight", 1.0)
+
+    def definir_peso_aresta(self, origem: Any, destino: Any, peso: float) -> None:
+        """
+        Define o peso de uma aresta.
+
+        Args:
+            origem: Identificador do vértice de origem.
+            destino: Identificador do vértice de destino.
+            peso: Novo peso da aresta.
+
+        Raises:
+            ValueError: Se a aresta não existir no grafo.
+        """
+        if not self._grafo.has_edge(origem, destino):
+            raise ValueError(f"Aresta ({origem}, {destino}) não existe no grafo.")
+
+        self._grafo.edges[origem, destino]["weight"] = peso
         
     def obter_adjacentes(self, id_vertice: Any) -> List[Any]:
         """
@@ -198,9 +250,25 @@ class Grafo:
             ValueError: Se o vértice não existir no grafo.
         """
         if id_vertice not in self._grafo.nodes:
-            raise ValueError(f"Vértice '{id_vertice}' não existe no grafo.")
+            raise ValueError(f"Vértice \'{id_vertice}\' não existe no grafo.")
             
         return list(self._grafo.neighbors(id_vertice))
+    
+    def obter_vizinhos(self, id_vertice: Any) -> List[Any]:
+        """
+        Obtém a lista de vértices vizinhos a um vértice (alias para obter_adjacentes).
+        Método necessário para compatibilidade com algoritmos de caminhos.
+        
+        Args:
+            id_vertice: Identificador do vértice.
+            
+        Returns:
+            List[Any]: Lista de identificadores dos vértices vizinhos.
+            
+        Raises:
+            ValueError: Se o vértice não existir no grafo.
+        """
+        return self.obter_adjacentes(id_vertice)
         
     def obter_grau(self, id_vertice: Any) -> int:
         """
@@ -216,9 +284,24 @@ class Grafo:
             ValueError: Se o vértice não existir no grafo.
         """
         if id_vertice not in self._grafo.nodes:
-            raise ValueError(f"Vértice '{id_vertice}' não existe no grafo.")
+            raise ValueError(f"Vértice \'{id_vertice}\' não existe no grafo.")
             
         return self._grafo.degree(id_vertice)
+
+    def calcular_grau(self, id_vertice: Any) -> int:
+        """
+        Calcula o grau de um vértice (alias para obter_grau).
+
+        Args:
+            id_vertice: Identificador do vértice.
+
+        Returns:
+            int: Grau do vértice.
+
+        Raises:
+            ValueError: Se o vértice não existir no grafo.
+        """
+        return self.obter_grau(id_vertice)
         
     def existe_vertice(self, id_vertice: Any) -> bool:
         """
@@ -290,6 +373,9 @@ class Grafo:
         """
         if self.eh_vazio():
             return True
+        # Para grafos direcionados, verifica conectividade forte ou fraca
+        if self.eh_direcionado():
+            return nx.is_weakly_connected(self._grafo)
         return nx.is_connected(self._grafo)
         
     def eh_direcionado(self) -> bool:
@@ -311,7 +397,7 @@ class Grafo:
         
         Args:
             titulo: Título do gráfico.
-            layout: Tipo de layout para visualização ('spring', 'circular', 'random', 'shell', 'kamada_kawai', 'spectral').
+            layout: Tipo de layout para visualização ("spring", "circular", "random", "shell", "kamada_kawai", "spectral").
             tamanho_figura: Tamanho da figura (largura, altura).
             mostrar: Se True, exibe a figura. Se False, apenas cria a figura sem exibir.
             salvar_como: Caminho para salvar a figura. Se None, não salva.
@@ -335,21 +421,22 @@ class Grafo:
             pos = nx.spring_layout(self._grafo)
             
         # Obtém pesos das arestas para visualização
-        edge_weights = [self._grafo[u][v].get('weight', 1.0) for u, v in self._grafo.edges()]
+        edge_weights = [self._grafo[u][v].get("weight", 1.0) for u, v in self._grafo.edges()]
         
         # Desenha o grafo
-        nx.draw_networkx_nodes(self._grafo, pos, node_size=500, node_color='lightblue')
+        nx.draw_networkx_nodes(self._grafo, pos, node_size=500, node_color="lightblue")
         
         # Desenha as arestas com setas se for direcionado
         if self.eh_direcionado():
             nx.draw_networkx_edges(self._grafo, pos, width=edge_weights, alpha=0.7, 
-                                  arrowstyle='->', arrowsize=15)
+                                  arrowstyle="->", arrowsize=15)
         else:
             nx.draw_networkx_edges(self._grafo, pos, width=edge_weights, alpha=0.7)
             
         nx.draw_networkx_labels(self._grafo, pos, font_size=12)
         
         # Adiciona rótulos de peso nas arestas
+        # Corrigido: Usar aspas simples dentro da f-string
         edge_labels = {(u, v): f"{self._grafo[u][v].get('weight', 1.0):.1f}" 
                       for u, v in self._grafo.edges()}
         nx.draw_networkx_edge_labels(self._grafo, pos, edge_labels=edge_labels)
@@ -360,11 +447,11 @@ class Grafo:
         else:
             plt.title(self.nome)
             
-        plt.axis('off')
+        plt.axis("off")
         
         # Salva a figura se solicitado
         if salvar_como:
-            plt.savefig(salvar_como, bbox_inches='tight')
+            plt.savefig(salvar_como, bbox_inches="tight")
             
         # Exibe a figura se solicitado
         if mostrar:

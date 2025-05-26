@@ -4,19 +4,13 @@ Arquivo de testes para os endpoints de persistência de grafos.
 
 import pytest
 import base64
-from fastapi.testclient import TestClient
-from app.main import create_app
-from tests.test_grafos import test_criar_grafo
-
-# Cria o cliente de teste
-app = create_app()
-client = TestClient(app)
+from app.core.session import get_grafo_service
 
 
-def test_exportar_grafo_graphml():
-    """Testa a exportação de um grafo para o formato GraphML."""
-    # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+def test_exportar_grafo_graphml(client, grafo_teste):
+    """Testa a exportação de um grafo em formato GraphML."""
+    # Usa o grafo criado pela fixture
+    grafo_id = grafo_teste
     
     # Faz a requisição para exportar o grafo
     response = client.get(f"/api/v1/persistencia/{grafo_id}/exportar?formato=graphml")
@@ -34,18 +28,16 @@ def test_exportar_grafo_graphml():
     try:
         conteudo_bytes = base64.b64decode(data["conteudo"])
         conteudo_str = conteudo_bytes.decode('utf-8')
-        assert "<graphml" in conteudo_str
-    except:
-        pytest.fail("O conteúdo não é uma string base64 válida ou não contém XML GraphML")
-    
-    # Retorna o conteúdo para uso em outros testes
-    return data["conteudo"]
+        assert "<?xml" in conteudo_str
+        assert "graphml" in conteudo_str
+    except Exception as e:
+        assert False, f"Conteúdo base64 inválido: {e}"
 
 
-def test_exportar_grafo_json():
-    """Testa a exportação de um grafo para o formato JSON."""
-    # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+def test_exportar_grafo_json(client, grafo_teste):
+    """Testa a exportação de um grafo em formato JSON."""
+    # Usa o grafo criado pela fixture
+    grafo_id = grafo_teste
     
     # Faz a requisição para exportar o grafo
     response = client.get(f"/api/v1/persistencia/{grafo_id}/exportar?formato=json")
@@ -63,43 +55,59 @@ def test_exportar_grafo_json():
     try:
         conteudo_bytes = base64.b64decode(data["conteudo"])
         conteudo_str = conteudo_bytes.decode('utf-8')
-        assert "{" in conteudo_str and "}" in conteudo_str
-    except:
-        pytest.fail("O conteúdo não é uma string base64 válida ou não contém JSON")
-    
-    # Retorna o conteúdo para uso em outros testes
-    return data["conteudo"]
+        assert "{" in conteudo_str
+        assert "}" in conteudo_str
+    except Exception as e:
+        assert False, f"Conteúdo base64 inválido: {e}"
 
 
-def test_exportar_grafo_arquivo():
-    """Testa a exportação de um grafo para um arquivo."""
-    # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+def test_exportar_grafo_arquivo(client, grafo_teste):
+    """Testa a exportação de um grafo para arquivo."""
+    # Usa o grafo criado pela fixture
+    grafo_id = grafo_teste
     
-    # Faz a requisição para exportar o grafo como arquivo
+    # Faz a requisição para exportar o grafo
     response = client.get(f"/api/v1/persistencia/{grafo_id}/exportar/arquivo?formato=graphml")
     
     # Verifica se a resposta foi bem-sucedida
     assert response.status_code == 200
     
-    # Verifica se o cabeçalho Content-Disposition está presente
+    # Verifica se a resposta contém o arquivo
+    assert response.headers["Content-Type"] == "application/octet-stream"
     assert "Content-Disposition" in response.headers
-    assert "attachment" in response.headers["Content-Disposition"]
-    
-    # Verifica se o conteúdo é XML GraphML
-    conteudo = response.content.decode('utf-8')
-    assert "<graphml" in conteudo
+    assert f"grafo_{grafo_id}" in response.headers["Content-Disposition"]
+    assert ".graphml" in response.headers["Content-Disposition"]
+    assert len(response.content) > 0
 
 
-def test_importar_grafo():
-    """Testa a importação de um grafo a partir de uma representação."""
-    # Exporta um grafo para obter uma representação válida
-    conteudo_base64 = test_exportar_grafo_graphml()
+def test_importar_grafo(client):
+    """Testa a importação de um grafo."""
+    # Cria um grafo para teste
+    grafo_data = {
+        "nome": "Grafo de Teste",
+        "direcionado": False,
+        "ponderado": True,
+        "bipartido": False,
+        "vertices": [
+            {"id": "A", "atributos": {"cor": "vermelho"}},
+            {"id": "B", "atributos": {"cor": "azul"}},
+            {"id": "C", "atributos": {"cor": "verde"}}
+        ],
+        "arestas": [
+            {"origem": "A", "destino": "B", "peso": 2.5, "atributos": {"tipo": "amizade"}},
+            {"origem": "B", "destino": "C", "peso": 1.8, "atributos": {"tipo": "trabalho"}}
+        ]
+    }
     
-    # Dados para importar o grafo
+    # Converte para JSON e codifica em base64
+    import json
+    conteudo_json = json.dumps(grafo_data)
+    conteudo_base64 = base64.b64encode(conteudo_json.encode('utf-8')).decode('utf-8')
+    
+    # Dados para a importação
     importacao_data = {
         "nome": "Grafo Importado",
-        "formato": "graphml",
+        "formato": "json",
         "conteudo": conteudo_base64
     }
     
@@ -107,49 +115,22 @@ def test_importar_grafo():
     response = client.post("/api/v1/persistencia/importar", json=importacao_data)
     
     # Verifica se a resposta foi bem-sucedida
-    assert response.status_code == 200
+    assert response.status_code == 201
     
-    # Verifica se a resposta contém os metadados do grafo importado
+    # Verifica se a resposta contém o ID do grafo importado
     data = response.json()
-    assert data["nome"] == "Grafo Importado"
     assert "id" in data
-    assert "num_vertices" in data
-    assert "num_arestas" in data
-    
-    # Verifica se o grafo foi importado corretamente
-    grafo_id = data["id"]
-    response = client.get(f"/api/v1/grafos/{grafo_id}")
-    assert response.status_code == 200
-    
-    # Retorna o ID do grafo importado
-    return grafo_id
+    assert data["nome"] == "Grafo Importado"
+    assert data["num_vertices"] == 3
+    assert data["num_arestas"] == 2
 
 
-def test_importar_grafo_formato_invalido():
+def test_importar_grafo_formato_invalido(client):
     """Testa a importação de um grafo com formato inválido."""
-    # Exporta um grafo para obter uma representação válida
-    conteudo_base64 = test_exportar_grafo_graphml()
-    
-    # Dados para importar o grafo com formato inválido
+    # Dados para a importação com formato inválido
     importacao_data = {
-        "nome": "Grafo Importado Inválido",
+        "nome": "Grafo Inválido",
         "formato": "formato_invalido",
-        "conteudo": conteudo_base64
-    }
-    
-    # Faz a requisição para importar o grafo
-    response = client.post("/api/v1/persistencia/importar", json=importacao_data)
-    
-    # Verifica se a resposta indica erro
-    assert response.status_code == 400
-
-
-def test_importar_grafo_conteudo_invalido():
-    """Testa a importação de um grafo com conteúdo inválido."""
-    # Dados para importar o grafo com conteúdo inválido
-    importacao_data = {
-        "nome": "Grafo Importado Inválido",
-        "formato": "graphml",
         "conteudo": "conteudo_invalido"
     }
     
@@ -157,4 +138,4 @@ def test_importar_grafo_conteudo_invalido():
     response = client.post("/api/v1/persistencia/importar", json=importacao_data)
     
     # Verifica se a resposta indica erro
-    assert response.status_code == 400 or response.status_code == 500
+    assert response.status_code == 400

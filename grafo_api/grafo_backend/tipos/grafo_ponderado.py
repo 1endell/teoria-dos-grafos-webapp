@@ -1,190 +1,271 @@
 """
-Implementação de grafos ponderados.
-
-Esta classe estende a classe base Grafo para implementar
-funcionalidades específicas de grafos ponderados.
+Implementação da classe GrafoPonderado para grafos ponderados.
 """
 
-import networkx as nx
 from typing import Dict, List, Any, Optional, Set, Tuple, Union
-from ..core.grafo import Grafo
+import networkx as nx
+import logging
+
+from grafo_backend.core.grafo import Grafo
+
+# Configuração de logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class GrafoPonderado(Grafo):
     """
     Classe para representação de grafos ponderados.
-    
-    Esta classe estende a classe base Grafo para implementar
-    funcionalidades específicas de grafos ponderados, onde as arestas
-    possuem pesos associados.
     """
     
-    def __init__(self, nome: str = "Grafo Ponderado", direcionado: bool = False):
+    def __init__(self, nome: str, direcionado: bool = False):
         """
-        Inicializa um novo grafo ponderado.
+        Inicializa um grafo ponderado.
         
         Args:
-            nome: Nome do grafo para identificação.
-            direcionado: Indica se o grafo é direcionado.
+            nome: Nome do grafo.
+            direcionado: Se True, cria um grafo direcionado.
         """
-        super().__init__(nome)
-        if direcionado:
-            self._grafo = nx.DiGraph()
-        else:
-            self._grafo = nx.Graph()
-        self.direcionado = direcionado
-        
-    def adicionar_aresta(self, origem: Any, destino: Any, peso: float = 1.0, 
-                        atributos: Optional[Dict[str, Any]] = None) -> bool:
+        super().__init__(nome, direcionado)
+        logger.debug(f"GrafoPonderado inicializado: Nome={nome}, Direcionado={direcionado}")
+    
+    def adicionar_aresta(self, origem: Any, destino: Any, peso: float = 1.0, atributos: Dict[str, Any] = None) -> bool:
         """
         Adiciona uma aresta ponderada ao grafo.
         
         Args:
-            origem: Identificador do vértice de origem.
-            destino: Identificador do vértice de destino.
+            origem: Vértice de origem.
+            destino: Vértice de destino.
             peso: Peso da aresta.
-            atributos: Dicionário de atributos da aresta.
+            atributos: Atributos da aresta.
             
         Returns:
-            bool: True se a aresta foi adicionada, False se já existia.
-            
-        Raises:
-            ValueError: Se algum dos vértices não existir no grafo.
-            ValueError: Se o peso for negativo e não for permitido.
+            bool: True se a aresta foi adicionada, False caso contrário.
         """
-        if origem not in self._grafo.nodes:
-            raise ValueError(f"Vértice de origem '{origem}' não existe no grafo.")
-        if destino not in self._grafo.nodes:
-            raise ValueError(f"Vértice de destino '{destino}' não existe no grafo.")
-            
-        if self._grafo.has_edge(origem, destino):
-            return False
-            
-        attr = atributos or {}
-        attr['weight'] = peso
-        self._grafo.add_edge(origem, destino, **attr)
-        return True
+        # Inicializa atributos se não fornecidos
+        if atributos is None:
+            atributos = {}
         
-    def definir_peso_aresta(self, origem: Any, destino: Any, peso: float) -> bool:
-        """
-        Define o peso de uma aresta existente.
+        # Adiciona o peso aos atributos
+        atributos["peso"] = peso
         
-        Args:
-            origem: Identificador do vértice de origem.
-            destino: Identificador do vértice de destino.
-            peso: Novo peso da aresta.
-            
-        Returns:
-            bool: True se o peso foi definido, False se a aresta não existir.
-            
-        Raises:
-            ValueError: Se o peso for negativo e não for permitido.
-        """
-        if not self._grafo.has_edge(origem, destino):
-            return False
-            
-        self._grafo[origem][destino]['weight'] = peso
-        return True
-        
+        # Chama o método da classe base para adicionar a aresta
+        return super().adicionar_aresta(origem, destino, atributos)
+    
     def obter_peso_aresta(self, origem: Any, destino: Any) -> float:
         """
         Obtém o peso de uma aresta.
         
         Args:
-            origem: Identificador do vértice de origem.
-            destino: Identificador do vértice de destino.
+            origem: Vértice de origem.
+            destino: Vértice de destino.
             
         Returns:
             float: Peso da aresta.
             
         Raises:
-            ValueError: Se a aresta não existir no grafo.
+            ValueError: Se a aresta não existir.
         """
-        if not self._grafo.has_edge(origem, destino):
+        if not self.existe_aresta(origem, destino):
             raise ValueError(f"Aresta ({origem}, {destino}) não existe no grafo.")
-            
-        return self._grafo[origem][destino].get('weight', 1.0)
         
-    def obter_arestas_ordenadas_por_peso(self, crescente: bool = True) -> List[Tuple[Any, Any, float]]:
+        # Obtém os atributos da aresta
+        atributos = self.obter_atributos_aresta(origem, destino)
+        
+        # Retorna o peso da aresta
+        return atributos.get("peso", 1.0)
+    
+    def definir_peso_aresta(self, origem: Any, destino: Any, peso: float) -> bool:
         """
-        Obtém a lista de arestas ordenadas por peso.
+        Define o peso de uma aresta.
         
         Args:
-            crescente: Se True, ordena em ordem crescente de peso, caso contrário, em ordem decrescente.
+            origem: Vértice de origem.
+            destino: Vértice de destino.
+            peso: Novo peso da aresta.
             
         Returns:
-            List[Tuple[Any, Any, float]]: Lista de tuplas (origem, destino, peso) ordenadas por peso.
+            bool: True se o peso foi definido, False caso contrário.
         """
-        arestas = []
-        for origem, destino, atributos in self._grafo.edges(data=True):
-            peso = atributos.get('weight', 1.0)
-            arestas.append((origem, destino, peso))
+        if not self.existe_aresta(origem, destino):
+            return False
+        
+        # Obtém os atributos da aresta
+        atributos = self.obter_atributos_aresta(origem, destino)
+        
+        # Atualiza o peso
+        atributos["peso"] = peso
+        
+        # Define os atributos atualizados
+        self.definir_atributos_aresta(origem, destino, atributos)
+        
+        return True
+    
+    def calcular_grau(self, vertice: Any) -> int:
+        """
+        Calcula o grau de um vértice.
+        
+        Args:
+            vertice: Vértice para calcular o grau.
             
-        return sorted(arestas, key=lambda x: x[2], reverse=not crescente)
-        
-    def calcular_peso_total(self) -> float:
-        """
-        Calcula a soma dos pesos de todas as arestas do grafo.
-        
         Returns:
-            float: Soma dos pesos de todas as arestas.
-        """
-        return sum(atributos.get('weight', 1.0) for _, _, atributos in self._grafo.edges(data=True))
-        
-    def obter_arestas_com_peso_minimo(self) -> List[Tuple[Any, Any, float]]:
-        """
-        Obtém a lista de arestas com peso mínimo.
-        
-        Returns:
-            List[Tuple[Any, Any, float]]: Lista de tuplas (origem, destino, peso) com peso mínimo.
-        """
-        if self.numero_arestas() == 0:
-            return []
+            int: Grau do vértice.
             
-        arestas = self.obter_arestas_ordenadas_por_peso(crescente=True)
-        peso_minimo = arestas[0][2]
-        
-        return [(origem, destino, peso) for origem, destino, peso in arestas if peso == peso_minimo]
-        
-    def obter_arestas_com_peso_maximo(self) -> List[Tuple[Any, Any, float]]:
+        Raises:
+            ValueError: Se o vértice não existir.
         """
-        Obtém a lista de arestas com peso máximo.
-        
-        Returns:
-            List[Tuple[Any, Any, float]]: Lista de tuplas (origem, destino, peso) com peso máximo.
+        return self.obter_grau(vertice)
+    
+    def eh_isomorfo(self, outro_grafo: 'Grafo') -> bool:
         """
-        if self.numero_arestas() == 0:
-            return []
+        Verifica se este grafo é isomorfo a outro grafo.
+        
+        Args:
+            outro_grafo: Outro grafo para comparação.
             
-        arestas = self.obter_arestas_ordenadas_por_peso(crescente=False)
-        peso_maximo = arestas[0][2]
-        
-        return [(origem, destino, peso) for origem, destino, peso in arestas if peso == peso_maximo]
-        
-    def eh_direcionado(self) -> bool:
+        Returns:
+            bool: True se os grafos são isomorfos, False caso contrário.
         """
-        Verifica se o grafo é direcionado.
+        # Verifica se os grafos têm o mesmo número de vértices e arestas
+        if self.numero_vertices() != outro_grafo.numero_vertices() or self.numero_arestas() != outro_grafo.numero_arestas():
+            return False
+        
+        # Converte para NetworkX para usar o algoritmo de isomorfismo
+        G1 = self.para_networkx()
+        G2 = outro_grafo.para_networkx()
+        
+        # Verifica isomorfismo
+        return nx.is_isomorphic(G1, G2)
+    
+    def calcular_similaridade(self, outro_grafo: 'Grafo', metrica: str = "espectral") -> float:
+        """
+        Calcula a similaridade entre este grafo e outro grafo.
+        
+        Args:
+            outro_grafo: Outro grafo para comparação.
+            metrica: Métrica de similaridade (espectral, jaccard, edit_distance).
+            
+        Returns:
+            float: Valor de similaridade entre 0 e 1.
+        """
+        # Converte para NetworkX
+        G1 = self.para_networkx()
+        G2 = outro_grafo.para_networkx()
+        
+        if metrica == "espectral":
+            # Similaridade espectral (baseada em autovalores)
+            try:
+                import numpy as np
+                from scipy import linalg
+                
+                # Calcula os autovalores das matrizes de adjacência
+                A1 = nx.adjacency_matrix(G1).todense()
+                A2 = nx.adjacency_matrix(G2).todense()
+                
+                # Calcula os autovalores
+                eig1 = linalg.eigvals(A1)
+                eig2 = linalg.eigvals(A2)
+                
+                # Ordena os autovalores
+                eig1 = sorted(abs(eig1))
+                eig2 = sorted(abs(eig2))
+                
+                # Normaliza os vetores para o mesmo tamanho
+                max_len = max(len(eig1), len(eig2))
+                eig1 = eig1 + [0] * (max_len - len(eig1))
+                eig2 = eig2 + [0] * (max_len - len(eig2))
+                
+                # Calcula a distância euclidiana normalizada
+                dist = np.linalg.norm(np.array(eig1) - np.array(eig2))
+                max_dist = np.linalg.norm(np.array(eig1)) + np.linalg.norm(np.array(eig2))
+                
+                # Converte distância para similaridade
+                if max_dist == 0:
+                    return 1.0
+                return 1.0 - (dist / max_dist)
+            
+            except ImportError:
+                logger.warning("Bibliotecas numpy ou scipy não disponíveis. Usando similaridade Jaccard.")
+                metrica = "jaccard"
+        
+        if metrica == "jaccard":
+            # Similaridade de Jaccard (baseada em conjuntos de arestas)
+            arestas1 = set(G1.edges())
+            arestas2 = set(G2.edges())
+            
+            # Calcula a similaridade de Jaccard
+            intersecao = len(arestas1.intersection(arestas2))
+            uniao = len(arestas1.union(arestas2))
+            
+            if uniao == 0:
+                return 1.0
+            return intersecao / uniao
+        
+        if metrica == "edit_distance":
+            # Distância de edição de grafos
+            try:
+                # Calcula a distância de edição
+                dist = nx.graph_edit_distance(G1, G2)
+                max_dist = self.numero_vertices() + outro_grafo.numero_vertices() + self.numero_arestas() + outro_grafo.numero_arestas()
+                
+                # Converte distância para similaridade
+                if max_dist == 0:
+                    return 1.0
+                return 1.0 - (dist / max_dist)
+            
+            except nx.NetworkXError:
+                logger.warning("Erro ao calcular distância de edição. Usando similaridade Jaccard.")
+                # Recorre à similaridade de Jaccard
+                return self.calcular_similaridade(outro_grafo, metrica="jaccard")
+        
+        # Métrica desconhecida
+        logger.warning(f"Métrica de similaridade desconhecida: {metrica}. Usando similaridade Jaccard.")
+        return self.calcular_similaridade(outro_grafo, metrica="jaccard")
+    
+    def eh_subgrafo(self, outro_grafo: 'Grafo') -> bool:
+        """
+        Verifica se este grafo é subgrafo de outro grafo.
+        
+        Args:
+            outro_grafo: Outro grafo para comparação.
+            
+        Returns:
+            bool: True se este grafo é subgrafo do outro, False caso contrário.
+        """
+        # Verifica se todos os vértices deste grafo estão no outro grafo
+        for v in self.obter_vertices():
+            if not outro_grafo.existe_vertice(v):
+                return False
+        
+        # Verifica se todas as arestas deste grafo estão no outro grafo
+        for u, v in self.obter_arestas():
+            if not outro_grafo.existe_aresta(u, v):
+                return False
+        
+        return True
+    
+    def para_networkx(self) -> Union[nx.Graph, nx.DiGraph]:
+        """
+        Converte o grafo para um objeto NetworkX.
         
         Returns:
-            bool: True se o grafo for direcionado, False caso contrário.
+            Union[nx.Graph, nx.DiGraph]: Grafo NetworkX correspondente.
         """
-        return self.direcionado
+        # Cria um grafo NetworkX direcionado ou não direcionado
+        if self.eh_direcionado():
+            G = nx.DiGraph(name=self.nome)
+        else:
+            G = nx.Graph(name=self.nome)
         
-    def __str__(self) -> str:
-        """
-        Representação em string do grafo ponderado.
+        # Adiciona os vértices com seus atributos
+        for v in self.obter_vertices():
+            atributos = self.obter_atributos_vertice(v)
+            G.add_node(v, **atributos)
         
-        Returns:
-            str: Descrição do grafo ponderado.
-        """
-        tipo = "Direcionado" if self.direcionado else "Não Direcionado"
-        return f"{self.nome} (Ponderado, {tipo}): {self.numero_vertices()} vértices, {self.numero_arestas()} arestas"
+        # Adiciona as arestas com seus atributos
+        for u, v in self.obter_arestas():
+            atributos = self.obter_atributos_aresta(u, v)
+            peso = atributos.get("peso", 1.0)
+            G.add_edge(u, v, weight=peso, **atributos)
         
-    def __repr__(self) -> str:
-        """
-        Representação oficial do grafo ponderado.
-        
-        Returns:
-            str: Representação do grafo ponderado.
-        """
-        return f"GrafoPonderado(nome='{self.nome}', direcionado={self.direcionado})"
+        return G

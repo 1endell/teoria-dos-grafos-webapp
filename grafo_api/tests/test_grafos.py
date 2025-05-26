@@ -3,15 +3,10 @@ Arquivo de testes para os endpoints de grafos.
 """
 
 import pytest
-from fastapi.testclient import TestClient
-from app.main import create_app
-
-# Cria o cliente de teste
-app = create_app()
-client = TestClient(app)
+from app.core.session import get_grafo_service
 
 
-def test_criar_grafo():
+def test_criar_grafo(client):
     """Testa a criação de um grafo."""
     # Dados para criar um grafo
     grafo_data = {
@@ -49,7 +44,7 @@ def test_criar_grafo():
     return data["id"]
 
 
-def test_listar_grafos():
+def test_listar_grafos(client):
     """Testa a listagem de grafos."""
     # Faz a requisição para listar os grafos
     response = client.get("/api/v1/grafos/")
@@ -64,10 +59,10 @@ def test_listar_grafos():
     assert isinstance(data["grafos"], list)
 
 
-def test_obter_grafo():
+def test_obter_grafo(client):
     """Testa a obtenção de um grafo específico."""
     # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+    grafo_id = test_criar_grafo(client)
     
     # Faz a requisição para obter o grafo
     response = client.get(f"/api/v1/grafos/{grafo_id}")
@@ -86,10 +81,10 @@ def test_obter_grafo():
     assert len(data["arestas"]) == 2
 
 
-def test_atualizar_grafo():
+def test_atualizar_grafo(client):
     """Testa a atualização de um grafo."""
     # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+    grafo_id = test_criar_grafo(client)
     
     # Dados para atualizar o grafo
     grafo_data = {
@@ -108,10 +103,10 @@ def test_atualizar_grafo():
     assert data["nome"] == "Grafo Atualizado"
 
 
-def test_adicionar_vertice():
+def test_adicionar_vertice(client):
     """Testa a adição de um vértice a um grafo."""
     # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+    grafo_id = test_criar_grafo(client)
     
     # Dados para adicionar um vértice
     vertice_data = {
@@ -136,10 +131,10 @@ def test_adicionar_vertice():
     assert len(data["vertices"]) == 4
 
 
-def test_adicionar_aresta():
+def test_adicionar_aresta(client):
     """Testa a adição de uma aresta a um grafo."""
     # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+    grafo_id = test_criar_grafo(client)
     
     # Adiciona um vértice D para teste
     vertice_data = {"id": "D", "atributos": {"cor": "amarelo"}}
@@ -172,10 +167,10 @@ def test_adicionar_aresta():
     assert len(data["arestas"]) == 3
 
 
-def test_remover_vertice():
+def test_remover_vertice(client):
     """Testa a remoção de um vértice de um grafo."""
     # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+    grafo_id = test_criar_grafo(client)
     
     # Faz a requisição para remover o vértice
     response = client.delete(f"/api/v1/grafos/{grafo_id}/vertices/C")
@@ -191,10 +186,10 @@ def test_remover_vertice():
     assert len(data["arestas"]) == 1  # A aresta B-C também deve ter sido removida
 
 
-def test_remover_aresta():
+def test_remover_aresta(client):
     """Testa a remoção de uma aresta de um grafo."""
     # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+    grafo_id = test_criar_grafo(client)
     
     # Faz a requisição para remover a aresta
     response = client.delete(f"/api/v1/grafos/{grafo_id}/arestas/A/B")
@@ -209,10 +204,10 @@ def test_remover_aresta():
     assert all(not (a["origem"] == "A" and a["destino"] == "B") for a in data["arestas"])
 
 
-def test_excluir_grafo():
+def test_excluir_grafo(client):
     """Testa a exclusão de um grafo."""
     # Cria um grafo para teste
-    grafo_id = test_criar_grafo()
+    grafo_id = test_criar_grafo(client)
     
     # Faz a requisição para excluir o grafo
     response = client.delete(f"/api/v1/grafos/{grafo_id}")

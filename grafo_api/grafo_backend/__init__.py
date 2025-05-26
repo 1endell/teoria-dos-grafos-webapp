@@ -1,8 +1,15 @@
 """
-Módulo de inicialização do backend para estudo de teoria dos grafos.
+Inicialização do backend de grafos.
+
+Este arquivo garante que o diretório raiz do projeto esteja sempre disponível
+para importações absolutas em todos os módulos do backend.
 """
 
-from .core import Grafo, Vertice, Aresta
+import sys
+import os
 
-__version__ = '0.1.0'
-__all__ = ['Grafo', 'Vertice', 'Aresta']
+# Adiciona o diretório raiz ao path para permitir importações absolutas
+# independente de onde o módulo é importado
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)

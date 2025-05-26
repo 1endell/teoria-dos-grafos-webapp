@@ -3,21 +3,13 @@ Arquivo de testes para os endpoints de comparação entre grafos.
 """
 
 import pytest
-from fastapi.testclient import TestClient
-from app.main import create_app
-from tests.test_grafos import test_criar_grafo
-from tests.test_operacoes import criar_segundo_grafo
+from app.core.session import get_grafo_service
 
-# Cria o cliente de teste
-app = create_app()
-client = TestClient(app)
-
-
-def test_comparar_grafos_isomorfismo():
+def test_comparar_grafos_isomorfismo(client, grafos_operacoes):
     """Testa a comparação de isomorfismo entre dois grafos."""
-    # Cria dois grafos para teste
-    grafo_id1 = test_criar_grafo()
-    grafo_id2 = criar_segundo_grafo()
+    # Usa os grafos criados pela fixture
+    grafo_id1 = grafos_operacoes["grafo_id1"]
+    grafo_id2 = grafos_operacoes["grafo_id2"]
     
     # Dados para a comparação
     comparacao_data = {
@@ -42,11 +34,11 @@ def test_comparar_grafos_isomorfismo():
     assert "eh_isomorfo" in data["resultado"]
 
 
-def test_verificar_isomorfismo_direto():
+def test_verificar_isomorfismo_direto(client, grafos_operacoes):
     """Testa a verificação direta de isomorfismo entre dois grafos."""
-    # Cria dois grafos para teste
-    grafo_id1 = test_criar_grafo()
-    grafo_id2 = criar_segundo_grafo()
+    # Usa os grafos criados pela fixture
+    grafo_id1 = grafos_operacoes["grafo_id1"]
+    grafo_id2 = grafos_operacoes["grafo_id2"]
     
     # Faz a requisição para verificar isomorfismo
     response = client.get(f"/api/v1/comparacao/isomorfismo/{grafo_id1}/{grafo_id2}")
@@ -64,11 +56,11 @@ def test_verificar_isomorfismo_direto():
     assert "eh_isomorfo" in data["resultado"]
 
 
-def test_calcular_similaridade():
+def test_calcular_similaridade(client, grafos_operacoes):
     """Testa o cálculo de similaridade entre dois grafos."""
-    # Cria dois grafos para teste
-    grafo_id1 = test_criar_grafo()
-    grafo_id2 = criar_segundo_grafo()
+    # Usa os grafos criados pela fixture
+    grafo_id1 = grafos_operacoes["grafo_id1"]
+    grafo_id2 = grafos_operacoes["grafo_id2"]
     
     # Faz a requisição para calcular similaridade
     response = client.get(f"/api/v1/comparacao/similaridade/{grafo_id1}/{grafo_id2}?metrica=espectral")
@@ -86,11 +78,11 @@ def test_calcular_similaridade():
     assert "similaridade" in data["resultado"]
 
 
-def test_verificar_subgrafo():
+def test_verificar_subgrafo(client, grafos_operacoes):
     """Testa a verificação de subgrafo entre dois grafos."""
-    # Cria dois grafos para teste
-    grafo_id1 = test_criar_grafo()
-    grafo_id2 = criar_segundo_grafo()
+    # Usa os grafos criados pela fixture
+    grafo_id1 = grafos_operacoes["grafo_id1"]
+    grafo_id2 = grafos_operacoes["grafo_id2"]
     
     # Faz a requisição para verificar subgrafo
     response = client.get(f"/api/v1/comparacao/subgrafo/{grafo_id1}/{grafo_id2}")
@@ -108,10 +100,10 @@ def test_verificar_subgrafo():
     assert "eh_subgrafo" in data["resultado"]
 
 
-def test_comparar_grafos_com_grafo_inexistente():
+def test_comparar_grafos_com_grafo_inexistente(client, grafo_teste):
     """Testa a comparação com um grafo inexistente."""
-    # Cria um grafo para teste
-    grafo_id1 = test_criar_grafo()
+    # Usa o grafo criado pela fixture
+    grafo_id1 = grafo_teste
     
     # ID de um grafo inexistente
     grafo_id2 = "grafo_inexistente"
@@ -130,11 +122,11 @@ def test_comparar_grafos_com_grafo_inexistente():
     assert response.status_code == 404
 
 
-def test_comparar_grafos_metrica_invalida():
+def test_comparar_grafos_metrica_invalida(client, grafos_operacoes):
     """Testa a comparação com uma métrica inválida."""
-    # Cria dois grafos para teste
-    grafo_id1 = test_criar_grafo()
-    grafo_id2 = criar_segundo_grafo()
+    # Usa os grafos criados pela fixture
+    grafo_id1 = grafos_operacoes["grafo_id1"]
+    grafo_id2 = grafos_operacoes["grafo_id2"]
     
     # Dados para a comparação com métrica inválida
     comparacao_data = {

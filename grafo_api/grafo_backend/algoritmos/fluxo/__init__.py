@@ -1,7 +1,9 @@
 """
-Módulo de inicialização para algoritmos de fluxo em redes.
+Módulo de algoritmos de fluxo em grafos.
+
+Este módulo contém implementações de algoritmos para calcular fluxos em redes,
+incluindo o algoritmo de Ford-Fulkerson para fluxo máximo.
 """
 
-from .ford_fulkerson import ford_fulkerson, fluxo_maximo, corte_minimo
-
-__all__ = ['ford_fulkerson', 'fluxo_maximo', 'corte_minimo']
+# Importações absolutas para garantir compatibilidade
+from grafo_backend.algoritmos.fluxo.ford_fulkerson import ford_fulkerson, fluxo_maximo
