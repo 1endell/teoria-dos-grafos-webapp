@@ -5,23 +5,19 @@ import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Plus, Minus, Move, MousePointer, Circle, ArrowRight, 
   Save, Trash2, RotateCcw, RotateCw, Maximize, Settings 
 } from 'lucide-react';
 import { graphService } from '@/services/graphService';
-import { Grafo, GrafoCreate, VerticeCreate, ArestaCreate, DadosVisualizacao } from '@/types/graph';
+import { Grafo, GrafoCreate, VerticeCreate, ArestaCreate } from '@/types/graph';
 import { useToast } from '@/hooks/use-toast';
 
 // Definição de tipos para o editor
 type EditorMode = 'select' | 'addNode' | 'addEdge' | 'pan';
-type NodeData = { x: number, y: number, size: number, color: string, label: string };
-type EdgeData = { size: number, color: string, label?: string, type?: 'arrow' | 'line', weight?: number };
 
 interface GraphEditorProps {
   grafoId?: string;
@@ -31,7 +27,7 @@ interface GraphEditorProps {
 const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
-  const sigmaRef = useRef<any>(null);
+  const sigmaRef = useRef<Sigma | null>(null);
   const graphRef = useRef<Graph>(new Graph({ multi: false, type: 'directed' }));
   
   // Estado
@@ -44,7 +40,6 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
   const [nodeCounter, setNodeCounter] = useState(0);
   const [nodeProperties, setNodeProperties] = useState({ label: '', color: '#1E88E5' });
   const [edgeProperties, setEdgeProperties] = useState({ weight: 1.0, color: '#757575' });
-  const [zoomLevel, setZoomLevel] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [layoutType, setLayoutType] = useState('circular');
   
@@ -52,23 +47,32 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
 
   // Inicialização do Sigma e carregamento do grafo
   useEffect(() => {
-    if (!containerRef.current) return;
+    console.log('GraphEditor useEffect triggered');
+    if (!containerRef.current) {
+      console.log('Container ref not available');
+      return;
+    }
     
     // Limpar instância anterior se existir
     if (sigmaRef.current) {
+      console.log('Cleaning previous sigma instance');
       sigmaRef.current.kill();
+      sigmaRef.current = null;
     }
     
     // Inicializar grafo vazio ou carregar existente
     if (grafoId) {
+      console.log('Loading existing graph:', grafoId);
       loadGrafo(grafoId);
     } else {
+      console.log('Initializing empty graph');
       initEmptyGraph();
     }
     
     return () => {
       if (sigmaRef.current) {
         sigmaRef.current.kill();
+        sigmaRef.current = null;
       }
     };
   }, [grafoId]);
@@ -77,6 +81,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
   const loadGrafo = async (id: string) => {
     try {
       setIsLoading(true);
+      console.log('Loading graph data for ID:', id);
       const grafo = await graphService.obterGrafo(id);
       setGrafoInfo(grafo);
       setIsDirected(grafo.direcionado);
@@ -101,13 +106,15 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       
       // Adicionar arestas
       visualizacao.arestas.forEach(a => {
-        graph.addEdge(a.origem, a.destino, {
-          size: 2,
-          color: '#757575',
-          label: a.peso !== undefined ? a.peso.toString() : '',
-          weight: a.peso || 1,
-          type: grafo.direcionado ? 'arrow' : 'line'
-        });
+        if (graph.hasNode(a.origem) && graph.hasNode(a.destino)) {
+          graph.addEdge(a.origem, a.destino, {
+            size: 2,
+            color: '#757575',
+            label: a.peso !== undefined ? a.peso.toString() : '',
+            weight: a.peso || 1,
+            type: grafo.direcionado ? 'arrow' : 'line'
+          });
+        }
       });
       
       // Atualizar contador de nós
@@ -126,6 +133,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       initSigma(graph);
       
     } catch (error) {
+      console.error('Error loading graph:', error);
       toast({
         title: "Erro",
         description: "Não foi possível carregar o grafo.",
@@ -139,6 +147,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
 
   // Inicializar grafo vazio
   const initEmptyGraph = () => {
+    console.log('Initializing empty graph');
     const graph = new Graph({ multi: false, type: isDirected ? 'directed' : 'undirected' });
     graphRef.current = graph;
     initSigma(graph);
@@ -146,68 +155,79 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
 
   // Inicializar Sigma
   const initSigma = (graph: Graph) => {
-    if (!containerRef.current) return;
-    
-    // Aplicar layout se o grafo estiver vazio
-    if (graph.order === 0) {
-      // Grafo vazio, não precisa aplicar layout
-    } else if (layoutType === 'circular') {
-      circular.assign(graph);
-    } else if (layoutType === 'forceatlas2') {
-      const settings = forceAtlas2.inferSettings(graph);
-      forceAtlas2.assign(graph, { settings, iterations: 100 });
+    if (!containerRef.current) {
+      console.log('Container not available for sigma init');
+      return;
     }
     
-    // Inicializar Sigma
-    sigmaRef.current = new Sigma(graph, containerRef.current, {
-      renderEdgeLabels: isWeighted,
-      defaultEdgeType: isDirected ? 'arrow' : 'line',
-      defaultNodeColor: '#1E88E5',
-      defaultEdgeColor: '#757575',
-      labelSize: 14,
-      labelWeight: 'bold',
-      minCameraRatio: 0.1,
-      maxCameraRatio: 5,
-      nodeProgramClasses: {
-        circle: {
-          // Configuração para vértices redondos
-          vertexAttributeSize: 'size',
-          vertexAttributeColor: 'color',
-          vertexAttributePosition: ['x', 'y'],
-          zIndex: 0,
-        }
-      },
-      edgeProgramClasses: {
-        // Configuração para arestas retas
-        line: {
-          zIndex: 0,
-        },
-        arrow: {
-          zIndex: 0,
+    console.log('Initializing Sigma with graph order:', graph.order);
+    
+    try {
+      // Aplicar layout se o grafo tiver nós
+      if (graph.order > 0) {
+        if (layoutType === 'circular') {
+          circular.assign(graph);
+        } else if (layoutType === 'forceatlas2') {
+          const settings = forceAtlas2.inferSettings(graph);
+          forceAtlas2.assign(graph, { settings, iterations: 100 });
         }
       }
-    });
-    
-    // Configurar eventos
-    setupSigmaEvents();
+      
+      // Configuração do Sigma com configurações mais simples
+      const sigmaSettings = {
+        renderEdgeLabels: isWeighted,
+        defaultEdgeType: isDirected ? 'arrow' : 'line',
+        defaultNodeColor: '#1E88E5',
+        defaultEdgeColor: '#757575',
+        labelSize: 14,
+        labelWeight: 'bold' as const,
+        minCameraRatio: 0.1,
+        maxCameraRatio: 5,
+      };
+      
+      console.log('Creating Sigma instance with settings:', sigmaSettings);
+      
+      // Inicializar Sigma
+      sigmaRef.current = new Sigma(graph, containerRef.current, sigmaSettings);
+      
+      console.log('Sigma instance created successfully');
+      
+      // Configurar eventos
+      setupSigmaEvents();
+      
+      // Refresh para garantir que tudo seja renderizado
+      sigmaRef.current.refresh();
+      
+    } catch (error) {
+      console.error('Error initializing Sigma:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao inicializar o editor visual.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Configurar eventos do Sigma
   const setupSigmaEvents = () => {
-    if (!sigmaRef.current) return;
+    if (!sigmaRef.current) {
+      console.log('No sigma instance for event setup');
+      return;
+    }
     
+    console.log('Setting up Sigma events');
     const sigma = sigmaRef.current;
-    const graph = graphRef.current;
-    const camera = sigma.getCamera();
     
-    // Evento de clique no canvas
+    // Evento de clique no canvas - CORRIGIDO
     sigma.on('clickStage', (event: any) => {
-      // Se estiver no modo de adicionar nó, adiciona um novo nó na posição do clique
+      console.log('Stage clicked, mode:', mode, 'event:', event);
+      
       if (mode === 'addNode') {
-        const coords = sigma.viewportToGraph({ x: event.x, y: event.y });
+        // Corrigir a obtenção das coordenadas do clique
+        const coords = sigma.viewportToGraph(event);
+        console.log('Adding node at coordinates:', coords);
         addNode(coords);
       } else if (mode === 'select') {
-        // Limpar seleção
         setSelectedNode(null);
         setSourceNode(null);
       }
@@ -216,61 +236,54 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     // Evento de clique em nó
     sigma.on('clickNode', (event: any) => {
       const nodeId = event.node;
+      console.log('Node clicked:', nodeId, 'mode:', mode);
       
       if (mode === 'select') {
         setSelectedNode(nodeId);
       } else if (mode === 'addEdge') {
         if (sourceNode === null) {
-          // Primeiro nó selecionado
           setSourceNode(nodeId);
+          console.log('Source node selected:', nodeId);
         } else if (sourceNode !== nodeId) {
-          // Segundo nó selecionado, criar aresta
+          console.log('Target node selected, creating edge:', sourceNode, '->', nodeId);
           addEdge(sourceNode, nodeId);
           setSourceNode(null);
         }
       }
     });
-    
-    // Evento de movimento do mouse
-    sigma.getMouseCaptor().on('mousemove', (event: any) => {
-      // Implementar comportamento específico se necessário
-    });
-    
-    // Evento de zoom
-    sigma.getMouseCaptor().on('wheel', () => {
-      setZoomLevel(camera.getState().ratio);
-    });
   };
 
-  // Gerar nome automático para vértice
+  // Gerar nome automático para vértice com letras minúsculas
   const generateNodeName = (): string => {
-    // Função para converter número em nome de vértice no estilo Excel (a, b, c, ..., z, aa, ab, ...)
     const getLetterName = (num: number): string => {
       let name = '';
       let n = num;
       
-      while (n >= 0) {
-        name = String.fromCharCode(97 + (n % 26)) + name;
-        n = Math.floor(n / 26) - 1;
+      if (n < 26) {
+        // a-z
+        return String.fromCharCode(97 + n);
+      } else {
+        // aa, ab, ac, ... 
+        const firstLetter = Math.floor((n - 26) / 26);
+        const secondLetter = (n - 26) % 26;
+        return String.fromCharCode(97 + firstLetter) + String.fromCharCode(97 + secondLetter);
       }
-      
-      return name;
     };
     
-    // Verificar nomes já utilizados
     const graph = graphRef.current;
     const usedNames = new Set<string>();
     
+    // Coletar nomes já utilizados
     graph.forEachNode((nodeId, attributes) => {
-      if (attributes.label && /^[a-z]+$/.test(attributes.label)) {
+      if (attributes.label) {
         usedNames.add(attributes.label);
       }
     });
     
-    // Encontrar o próximo nome disponível
     let index = 0;
     let name = getLetterName(index);
     
+    // Encontrar próximo nome disponível
     while (usedNames.has(name)) {
       index++;
       name = getLetterName(index);
@@ -285,27 +298,43 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     const nodeId = nodeCounter.toString();
     const nodeName = nodeProperties.label || generateNodeName();
     
-    graph.addNode(nodeId, {
-      ...coords,
-      size: 15,
-      color: nodeProperties.color,
-      label: nodeName
-    });
+    console.log('Adding node:', { nodeId, nodeName, coords });
     
-    setNodeCounter(prev => prev + 1);
-    
-    // Notificar usuário
-    toast({
-      title: "Sucesso",
-      description: `Vértice ${nodeName} adicionado.`,
-    });
+    try {
+      graph.addNode(nodeId, {
+        ...coords,
+        size: 15,
+        color: nodeProperties.color,
+        label: nodeName
+      });
+      
+      setNodeCounter(prev => prev + 1);
+      
+      // Refresh sigma para mostrar o novo nó
+      if (sigmaRef.current) {
+        sigmaRef.current.refresh();
+      }
+      
+      toast({
+        title: "Sucesso",
+        description: `Vértice ${nodeName} adicionado.`,
+      });
+      
+      console.log('Node added successfully');
+    } catch (error) {
+      console.error('Error adding node:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao adicionar vértice.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Adicionar aresta
   const addEdge = (source: string, target: string) => {
     const graph = graphRef.current;
     
-    // Verificar se a aresta já existe
     if (graph.hasEdge(source, target)) {
       toast({
         title: "Aviso",
@@ -315,23 +344,35 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       return;
     }
     
-    // Adicionar aresta
-    graph.addEdge(source, target, {
-      size: 2,
-      color: edgeProperties.color,
-      label: isWeighted ? edgeProperties.weight.toString() : '',
-      weight: edgeProperties.weight,
-      type: isDirected ? 'arrow' : 'line'
-    });
-    
-    // Notificar usuário
-    const sourceLabel = graph.getNodeAttribute(source, 'label');
-    const targetLabel = graph.getNodeAttribute(target, 'label');
-    
-    toast({
-      title: "Sucesso",
-      description: `Aresta de ${sourceLabel} para ${targetLabel} adicionada.`,
-    });
+    try {
+      graph.addEdge(source, target, {
+        size: 2,
+        color: edgeProperties.color,
+        label: isWeighted ? edgeProperties.weight.toString() : '',
+        weight: edgeProperties.weight,
+        type: isDirected ? 'arrow' : 'line'
+      });
+      
+      // Refresh sigma para mostrar a nova aresta
+      if (sigmaRef.current) {
+        sigmaRef.current.refresh();
+      }
+      
+      const sourceLabel = graph.getNodeAttribute(source, 'label');
+      const targetLabel = graph.getNodeAttribute(target, 'label');
+      
+      toast({
+        title: "Sucesso",
+        description: `Aresta de ${sourceLabel} para ${targetLabel} adicionada.`,
+      });
+    } catch (error) {
+      console.error('Error adding edge:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao adicionar aresta.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Remover nó selecionado
@@ -339,29 +380,50 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     if (!selectedNode) return;
     
     const graph = graphRef.current;
-    graph.dropNode(selectedNode);
-    setSelectedNode(null);
+    const nodeLabel = graph.getNodeAttribute(selectedNode, 'label');
     
-    toast({
-      title: "Sucesso",
-      description: `Vértice ${selectedNode} removido.`,
-    });
+    try {
+      graph.dropNode(selectedNode);
+      setSelectedNode(null);
+      
+      if (sigmaRef.current) {
+        sigmaRef.current.refresh();
+      }
+      
+      toast({
+        title: "Sucesso",
+        description: `Vértice ${nodeLabel} removido.`,
+      });
+    } catch (error) {
+      console.error('Error removing node:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover vértice.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Aplicar layout
   const applyLayout = (type: string) => {
     const graph = graphRef.current;
     
-    if (type === 'circular') {
-      circular.assign(graph);
-    } else if (type === 'forceatlas2') {
-      const settings = forceAtlas2.inferSettings(graph);
-      forceAtlas2.assign(graph, { settings, iterations: 100 });
-    }
+    if (graph.order === 0) return;
     
-    setLayoutType(type);
-    if (sigmaRef.current) {
-      sigmaRef.current.refresh();
+    try {
+      if (type === 'circular') {
+        circular.assign(graph);
+      } else if (type === 'forceatlas2') {
+        const settings = forceAtlas2.inferSettings(graph);
+        forceAtlas2.assign(graph, { settings, iterations: 100 });
+      }
+      
+      setLayoutType(type);
+      if (sigmaRef.current) {
+        sigmaRef.current.refresh();
+      }
+    } catch (error) {
+      console.error('Error applying layout:', error);
     }
   };
 
@@ -370,7 +432,6 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     if (sigmaRef.current) {
       const camera = sigmaRef.current.getCamera();
       camera.animatedReset();
-      setZoomLevel(1);
     }
   };
 
@@ -406,32 +467,20 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
         });
       });
       
-      // Criar ou atualizar grafo
-      let resultado;
-      if (grafoId) {
-        // Atualizar grafo existente (não implementado na API atual)
-        toast({
-          title: "Aviso",
-          description: "A API atual não suporta atualização de grafos. Um novo grafo será criado.",
-        });
-        resultado = await criarNovoGrafo(vertices, arestas);
-      } else {
-        // Criar novo grafo
-        resultado = await criarNovoGrafo(vertices, arestas);
-      }
+      // Criar novo grafo
+      const resultado = await criarNovoGrafo(vertices, arestas);
       
-      // Notificar usuário
       toast({
         title: "Sucesso",
         description: "Grafo salvo com sucesso!",
       });
       
-      // Callback
       if (onSave && resultado) {
         onSave(resultado.id);
       }
       
     } catch (error) {
+      console.error('Error saving graph:', error);
       toast({
         title: "Erro",
         description: "Não foi possível salvar o grafo.",
@@ -445,7 +494,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
   // Criar novo grafo
   const criarNovoGrafo = async (vertices: VerticeCreate[], arestas: ArestaCreate[]) => {
     const novoGrafo: GrafoCreate = {
-      nome: grafoInfo?.nome || "Grafo Visual",
+      nome: grafoInfo?.nome || `Grafo Visual ${new Date().toLocaleString()}`,
       direcionado: isDirected,
       ponderado: isWeighted,
       vertices,
@@ -459,7 +508,6 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
   const toggleDirected = () => {
     setIsDirected(prev => !prev);
     
-    // Recriar grafo com novo tipo
     const oldGraph = graphRef.current;
     const newGraph = new Graph({ multi: false, type: !isDirected ? 'directed' : 'undirected' });
     
@@ -477,10 +525,10 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       newGraph.addEdge(source, target, newAttributes);
     });
     
-    // Atualizar referência e reinicializar Sigma
     graphRef.current = newGraph;
     if (sigmaRef.current) {
       sigmaRef.current.kill();
+      sigmaRef.current = null;
     }
     initSigma(newGraph);
   };
@@ -613,11 +661,18 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       
       {/* Área principal */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Canvas do grafo */}
+        {/* Canvas do grafo com grid */}
         <div 
           ref={containerRef} 
-          className="flex-1 bg-gray-50"
-          style={{ position: 'relative' }}
+          className="flex-1 bg-gray-50 relative"
+          style={{ 
+            position: 'relative',
+            backgroundImage: `
+              linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '20px 20px'
+          }}
         >
           {isLoading && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-10">
@@ -657,8 +712,11 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
                   id="nodeLabel"
                   value={nodeProperties.label}
                   onChange={(e) => setNodeProperties({...nodeProperties, label: e.target.value})}
-                  placeholder="Rótulo do vértice"
+                  placeholder="Auto (a, b, c...)"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Deixe vazio para gerar automaticamente (a, b, c, ..., z, aa, ab...)
+                </p>
               </div>
               
               <div>
