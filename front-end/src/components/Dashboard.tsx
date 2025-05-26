@@ -178,11 +178,12 @@ const Dashboard: React.FC = () => {
 
     try {
       await graphService.excluirGrafo(id);
+      // Atualiza a lista de grafos imediatamente após a exclusão
+      setGrafos(prevGrafos => prevGrafos.filter(grafo => grafo.id !== id));
       toast({
         title: "Sucesso",
         description: "Grafo excluído com sucesso!",
       });
-      loadGrafos();
     } catch (error) {
       toast({
         title: "Erro",

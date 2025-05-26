@@ -251,9 +251,19 @@ const GraphVisualEditor: React.FC = () => {
     return (
       <div className="flex flex-col h-full">
         <div className="bg-white border-b p-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
-            {selectedGrafoId ? 'Editar Grafo' : 'Novo Grafo'}
-          </h2>
+          <div className="flex items-center space-x-2">
+            <h2 className="text-lg font-semibold">
+              {selectedGrafoId ? 'Editar Grafo' : 'Novo Grafo'}
+            </h2>
+            {!selectedGrafoId && (
+              <Input
+                className="w-64"
+                placeholder="Nome do grafo"
+                value={newGraph.nome}
+                onChange={(e) => setNewGraph({ ...newGraph, nome: e.target.value })}
+              />
+            )}
+          </div>
           <Button variant="outline" onClick={handleBackToList}>
             Voltar para Lista
           </Button>

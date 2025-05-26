@@ -118,7 +118,8 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
     console.log('Adding node called with coords:', coords, 'current mode:', state.mode);
     
     const graph = graphRef.current;
-    const nodeId = state.nodeCounter.toString();
+    // Usar UUID para garantir IDs únicos para os vértices
+    const nodeId = crypto.randomUUID();
     
     // Coletar nomes já utilizados
     const usedNames = new Set<string>();
@@ -133,31 +134,13 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
     console.log('Adding node:', { nodeId, nodeName, coords });
     
     try {
-      // Verificar se o nó já existe
-      if (graph.hasNode(nodeId)) {
-        console.log('Node already exists, incrementing counter');
-        const newNodeId = (state.nodeCounter + 1).toString();
-        
-        graph.addNode(newNodeId, {
-          x: coords.x,
-          y: coords.y,
-          size: 15,
-          color: state.nodeProperties.color,
-          label: nodeName
-        });
-        
-        updateState({ nodeCounter: state.nodeCounter + 2 });
-      } else {
-        graph.addNode(nodeId, {
-          x: coords.x,
-          y: coords.y,
-          size: 15,
-          color: state.nodeProperties.color,
-          label: nodeName
-        });
-        
-        updateState({ nodeCounter: state.nodeCounter + 1 });
-      }
+      graph.addNode(nodeId, {
+        x: coords.x,
+        y: coords.y,
+        size: 15,
+        color: state.nodeProperties.color,
+        label: nodeName
+      });
       
       // Limpar o rótulo após adicionar
       updateState({ 
@@ -310,8 +293,11 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
 
   // Criar novo grafo
   const criarNovoGrafo = async (vertices: VerticeCreate[], arestas: ArestaCreate[]) => {
+    // Usar o nome do grafo definido pelo usuário ou um nome padrão com timestamp
+    const grafoNome = grafoInfo?.nome || state.grafoNome || `Grafo Visual ${new Date().toLocaleString()}`;
+    
     const novoGrafo: GrafoCreate = {
-      nome: grafoInfo?.nome || `Grafo Visual ${new Date().toLocaleString()}`,
+      nome: grafoNome,
       direcionado: state.isDirected,
       ponderado: state.isWeighted,
       vertices,

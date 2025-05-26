@@ -112,8 +112,11 @@ export const useSigmaInstance = ({
       console.log('Stage clicked, current mode:', currentMode, 'event:', event);
       
       if (currentMode === 'addNode') {
-        // Obter coordenadas corretas do clique
-        const coords = sigma.viewportToGraph(event);
+        // Obter coordenadas exatas do clique para posicionamento preciso
+        const coords = sigma.viewportToGraph({
+          x: event.x,
+          y: event.y
+        });
         console.log('Adding node at coordinates:', coords);
         onStageClick(coords);
       } else if (currentMode === 'select') {
@@ -141,6 +144,14 @@ export const useSigmaInstance = ({
         }
       }
     });
+    
+    // Adicionar suporte para arrastar nós individualmente
+    sigma.getMouseCaptor().on('mousemove', () => {
+      // Apenas para garantir que o evento de mousemove está registrado
+    });
+    
+    // Configurar dragging de nós
+    sigma.dragNodes();
   };
 
   // Aplicar layout

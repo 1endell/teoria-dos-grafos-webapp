@@ -1,10 +1,6 @@
+import { NodeAttributes, EdgeAttributes } from 'graphology-types';
 
 export type EditorMode = 'select' | 'addNode' | 'addEdge' | 'pan';
-
-export interface GraphEditorProps {
-  grafoId?: string;
-  onSave?: (grafoId: string) => void;
-}
 
 export interface NodeProperties {
   label: string;
@@ -27,4 +23,10 @@ export interface GraphEditorState {
   edgeProperties: EdgeProperties;
   isLoading: boolean;
   layoutType: string;
+  grafoNome?: string; // Adicionado para permitir edição do nome do grafo
+}
+
+export interface GraphEditorProps {
+  grafoId?: string;
+  onSave?: (grafoId: string) => void;
 }
