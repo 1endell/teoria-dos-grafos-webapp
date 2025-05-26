@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Graph from 'graphology';
-import Sigma from 'sigma';
+import { Sigma } from 'sigma';
 import { circular } from 'graphology-layout';
 import forceAtlas2 from 'graphology-layout-forceatlas2';
 import { Button } from '@/components/ui/button';
