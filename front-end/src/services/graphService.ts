@@ -95,13 +95,7 @@ class GraphService {
   }
 
   async obterVisualizacao(grafoId: string, layout = 'spring', incluirAtributos = true): Promise<DadosVisualizacao> {
-    return this.request<DadosVisualizacao>(`/api/v1/visualizacao/${grafoId}`, {
-      method: 'POST',
-      body: JSON.stringify({
-        layout,
-        incluir_atributos: incluirAtributos
-      })
-    });
+    return this.request<DadosVisualizacao>(`/api/v1/visualizacao/${grafoId}?layout=${layout}&incluir_atributos=${incluirAtributos}`);
   }
 
   // ===== ALGORITMOS =====
