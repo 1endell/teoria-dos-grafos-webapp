@@ -43,7 +43,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
   const [isWeighted, setIsWeighted] = useState(true);
   const [nodeCounter, setNodeCounter] = useState(0);
   const [nodeProperties, setNodeProperties] = useState({ label: '', color: '#1E88E5' });
-  const [edgeProperties, setEdgeProperties] = useState({ weight: 1, color: '#757575' });
+  const [edgeProperties, setEdgeProperties] = useState({ weight: 1.0, color: '#757575' });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [layoutType, setLayoutType] = useState('circular');
@@ -166,6 +166,26 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       defaultEdgeColor: '#757575',
       labelSize: 14,
       labelWeight: 'bold',
+      minCameraRatio: 0.1,
+      maxCameraRatio: 5,
+      nodeProgramClasses: {
+        circle: {
+          // Configuração para vértices redondos
+          vertexAttributeSize: 'size',
+          vertexAttributeColor: 'color',
+          vertexAttributePosition: ['x', 'y'],
+          zIndex: 0,
+        }
+      },
+      edgeProgramClasses: {
+        // Configuração para arestas retas
+        line: {
+          zIndex: 0,
+        },
+        arrow: {
+          zIndex: 0,
+        }
+      }
     });
     
     // Configurar eventos
@@ -184,7 +204,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     sigma.on('clickStage', (event: any) => {
       // Se estiver no modo de adicionar nó, adiciona um novo nó na posição do clique
       if (mode === 'addNode') {
-        const coords = sigma.viewportToGraph(event);
+        const coords = sigma.viewportToGraph({ x: event.x, y: event.y });
         addNode(coords);
       } else if (mode === 'select') {
         // Limpar seleção
@@ -222,16 +242,54 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     });
   };
 
+  // Gerar nome automático para vértice
+  const generateNodeName = (): string => {
+    // Função para converter número em nome de vértice no estilo Excel (a, b, c, ..., z, aa, ab, ...)
+    const getLetterName = (num: number): string => {
+      let name = '';
+      let n = num;
+      
+      while (n >= 0) {
+        name = String.fromCharCode(97 + (n % 26)) + name;
+        n = Math.floor(n / 26) - 1;
+      }
+      
+      return name;
+    };
+    
+    // Verificar nomes já utilizados
+    const graph = graphRef.current;
+    const usedNames = new Set<string>();
+    
+    graph.forEachNode((nodeId, attributes) => {
+      if (attributes.label && /^[a-z]+$/.test(attributes.label)) {
+        usedNames.add(attributes.label);
+      }
+    });
+    
+    // Encontrar o próximo nome disponível
+    let index = 0;
+    let name = getLetterName(index);
+    
+    while (usedNames.has(name)) {
+      index++;
+      name = getLetterName(index);
+    }
+    
+    return name;
+  };
+
   // Adicionar nó
   const addNode = (coords: {x: number, y: number}) => {
     const graph = graphRef.current;
     const nodeId = nodeCounter.toString();
+    const nodeName = nodeProperties.label || generateNodeName();
     
     graph.addNode(nodeId, {
       ...coords,
-      size: 10,
+      size: 15,
       color: nodeProperties.color,
-      label: nodeProperties.label || nodeId
+      label: nodeName
     });
     
     setNodeCounter(prev => prev + 1);
@@ -239,7 +297,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     // Notificar usuário
     toast({
       title: "Sucesso",
-      description: `Vértice ${nodeId} adicionado.`,
+      description: `Vértice ${nodeName} adicionado.`,
     });
   };
 
@@ -267,9 +325,12 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     });
     
     // Notificar usuário
+    const sourceLabel = graph.getNodeAttribute(source, 'label');
+    const targetLabel = graph.getNodeAttribute(target, 'label');
+    
     toast({
       title: "Sucesso",
-      description: `Aresta de ${source} para ${target} adicionada.`,
+      description: `Aresta de ${sourceLabel} para ${targetLabel} adicionada.`,
     });
   };
 
@@ -338,7 +399,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
         arestas.push({
           origem: source,
           destino: target,
-          peso: attributes.weight || 1,
+          peso: attributes.weight || 1.0,
           atributos: {
             cor: attributes.color
           }
@@ -639,15 +700,14 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
                 <div>
                   <Label htmlFor="edgeWeight">Peso</Label>
                   <div className="flex items-center space-x-2">
-                    <Slider
-                      value={[edgeProperties.weight]}
-                      min={1}
-                      max={10}
-                      step={1}
-                      onValueChange={(value) => setEdgeProperties({...edgeProperties, weight: value[0]})}
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={edgeProperties.weight}
+                      onChange={(e) => setEdgeProperties({...edgeProperties, weight: parseFloat(e.target.value) || 0})}
                       className="flex-1"
                     />
-                    <span className="text-sm font-medium w-8 text-center">{edgeProperties.weight}</span>
                   </div>
                 </div>
               )}
