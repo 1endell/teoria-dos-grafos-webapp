@@ -218,19 +218,24 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     console.log('Setting up Sigma events');
     const sigma = sigmaRef.current;
     
-    // Evento de clique no canvas - CORRIGIDO
+    // Evento de clique no canvas - CORRIGIDO COM DEBOUNCE
     sigma.on('clickStage', (event: any) => {
       console.log('Stage clicked, mode:', mode, 'event:', event);
       
-      if (mode === 'addNode') {
-        // Corrigir a obtenção das coordenadas do clique
-        const coords = sigma.viewportToGraph(event);
-        console.log('Adding node at coordinates:', coords);
-        addNode(coords);
-      } else if (mode === 'select') {
-        setSelectedNode(null);
-        setSourceNode(null);
-      }
+      // Usar timeout para garantir que o estado do mode seja o mais atual
+      setTimeout(() => {
+        console.log('Processing click with current mode:', mode);
+        
+        if (mode === 'addNode') {
+          // Obter coordenadas corretas do clique
+          const coords = sigma.viewportToGraph(event);
+          console.log('Adding node at coordinates:', coords);
+          addNode(coords);
+        } else if (mode === 'select') {
+          setSelectedNode(null);
+          setSourceNode(null);
+        }
+      }, 10);
     });
     
     // Evento de clique em nó
@@ -238,18 +243,20 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       const nodeId = event.node;
       console.log('Node clicked:', nodeId, 'mode:', mode);
       
-      if (mode === 'select') {
-        setSelectedNode(nodeId);
-      } else if (mode === 'addEdge') {
-        if (sourceNode === null) {
-          setSourceNode(nodeId);
-          console.log('Source node selected:', nodeId);
-        } else if (sourceNode !== nodeId) {
-          console.log('Target node selected, creating edge:', sourceNode, '->', nodeId);
-          addEdge(sourceNode, nodeId);
-          setSourceNode(null);
+      setTimeout(() => {
+        if (mode === 'select') {
+          setSelectedNode(nodeId);
+        } else if (mode === 'addEdge') {
+          if (sourceNode === null) {
+            setSourceNode(nodeId);
+            console.log('Source node selected:', nodeId);
+          } else if (sourceNode !== nodeId) {
+            console.log('Target node selected, creating edge:', sourceNode, '->', nodeId);
+            addEdge(sourceNode, nodeId);
+            setSourceNode(null);
+          }
         }
-      }
+      }, 10);
     });
   };
 
@@ -292,7 +299,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     return name;
   };
 
-  // Adicionar nó
+  // Adicionar nó - CORRIGIDO
   const addNode = (coords: {x: number, y: number}) => {
     const graph = graphRef.current;
     const nodeId = nodeCounter.toString();
@@ -301,14 +308,35 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     console.log('Adding node:', { nodeId, nodeName, coords });
     
     try {
-      graph.addNode(nodeId, {
-        ...coords,
-        size: 15,
-        color: nodeProperties.color,
-        label: nodeName
-      });
+      // Verificar se o nó já existe
+      if (graph.hasNode(nodeId)) {
+        console.log('Node already exists, incrementing counter');
+        setNodeCounter(prev => prev + 1);
+        const newNodeId = (nodeCounter + 1).toString();
+        
+        graph.addNode(newNodeId, {
+          x: coords.x,
+          y: coords.y,
+          size: 15,
+          color: nodeProperties.color,
+          label: nodeName
+        });
+        
+        setNodeCounter(prev => prev + 2);
+      } else {
+        graph.addNode(nodeId, {
+          x: coords.x,
+          y: coords.y,
+          size: 15,
+          color: nodeProperties.color,
+          label: nodeName
+        });
+        
+        setNodeCounter(prev => prev + 1);
+      }
       
-      setNodeCounter(prev => prev + 1);
+      // Limpar o rótulo após adicionar
+      setNodeProperties(prev => ({ ...prev, label: '' }));
       
       // Refresh sigma para mostrar o novo nó
       if (sigmaRef.current) {
@@ -543,6 +571,15 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     }
   };
 
+  // Função para alterar modo com log
+  const handleModeChange = (newMode: EditorMode) => {
+    console.log('Changing mode from', mode, 'to', newMode);
+    setMode(newMode);
+    // Limpar seleções ao mudar modo
+    setSelectedNode(null);
+    setSourceNode(null);
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Barra de ferramentas */}
@@ -551,7 +588,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
           <Button
             size="sm"
             variant={mode === 'select' ? 'default' : 'outline'}
-            onClick={() => setMode('select')}
+            onClick={() => handleModeChange('select')}
             title="Selecionar"
           >
             <MousePointer className="h-4 w-4" />
@@ -559,7 +596,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
           <Button
             size="sm"
             variant={mode === 'addNode' ? 'default' : 'outline'}
-            onClick={() => setMode('addNode')}
+            onClick={() => handleModeChange('addNode')}
             title="Adicionar Vértice"
           >
             <Circle className="h-4 w-4" />
@@ -567,7 +604,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
           <Button
             size="sm"
             variant={mode === 'addEdge' ? 'default' : 'outline'}
-            onClick={() => setMode('addEdge')}
+            onClick={() => handleModeChange('addEdge')}
             title="Adicionar Aresta"
           >
             <ArrowRight className="h-4 w-4" />
@@ -575,7 +612,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
           <Button
             size="sm"
             variant={mode === 'pan' ? 'default' : 'outline'}
-            onClick={() => setMode('pan')}
+            onClick={() => handleModeChange('pan')}
             title="Mover Canvas"
           >
             <Move className="h-4 w-4" />
@@ -683,6 +720,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
           {mode === 'addNode' && (
             <div className="absolute top-4 left-4 bg-white p-2 rounded shadow-md z-10">
               <p className="text-sm font-medium">Clique no canvas para adicionar um vértice</p>
+              <p className="text-xs text-gray-500">Modo atual: {mode}</p>
             </div>
           )}
           
