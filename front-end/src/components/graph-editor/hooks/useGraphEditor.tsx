@@ -138,25 +138,22 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
   };
 
   // Adicionar nó
-  const addNode = (coords?: {x: number, y: number}) => {
+  const addNode = (coords?: { x: number, y: number }) => {
     console.log('Adding node called with coords:', coords, 'current mode:', state.mode);
-    
+
     const graph = graphRef.current;
     const nodeId = crypto.randomUUID();
-    
-    // Coletar nomes já utilizados
+
     const usedNames = new Set<string>();
     graph.forEachNode((nodeId, attributes) => {
       if (attributes.label) {
         usedNames.add(attributes.label);
       }
     });
-    
+
     const nodeName = state.nodeProperties.label || generateNodeName(usedNames);
     const position = coords || generateNodePosition();
-    
-    console.log('Adding node:', { nodeId, nodeName, position });
-    
+
     try {
       graph.addNode(nodeId, {
         x: position.x,
@@ -165,26 +162,14 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
         color: state.nodeProperties.color,
         label: nodeName
       });
-      
-      // Limpar o rótulo após adicionar
-      updateState({ 
-        nodeProperties: { ...state.nodeProperties, label: '' }
-      });
-      
-      toast({
-        title: "Sucesso",
-        description: `Vértice ${nodeName} adicionado.`,
-      });
-      
+
+      updateState({ nodeProperties: { ...state.nodeProperties, label: '' } });
+      toast({ title: "Sucesso", description: `Vértice ${nodeName} adicionado.` });
       console.log('Node added successfully');
       return true;
     } catch (error) {
       console.error('Error adding node:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao adicionar vértice.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro", description: "Erro ao adicionar vértice.", variant: "destructive" });
       return false;
     }
   };
@@ -192,16 +177,12 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
   // Adicionar aresta
   const addEdge = (source: string, target: string) => {
     const graph = graphRef.current;
-    
+
     if (graph.hasEdge(source, target)) {
-      toast({
-        title: "Aviso",
-        description: "Esta aresta já existe.",
-        variant: "default",
-      });
+      toast({ title: "Aviso", description: "Esta aresta já existe.", variant: "default" });
       return false;
     }
-    
+
     try {
       graph.addEdge(source, target, {
         size: 2,
@@ -210,23 +191,19 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
         weight: state.edgeProperties.weight,
         type: state.isDirected ? 'arrow' : 'line'
       });
-      
+
+      // Refresh Externo
+      if (typeof window !== 'undefined' && window.sigmaInstance) {
+        window.sigmaInstance.refresh();
+      }
+
       const sourceLabel = graph.getNodeAttribute(source, 'label');
       const targetLabel = graph.getNodeAttribute(target, 'label');
-      
-      toast({
-        title: "Sucesso",
-        description: `Aresta de ${sourceLabel} para ${targetLabel} adicionada.`,
-      });
-      
+      toast({ title: "Sucesso", description: `Aresta de ${sourceLabel} para ${targetLabel} adicionada.` });
       return true;
     } catch (error) {
       console.error('Error adding edge:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao adicionar aresta.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro", description: "Erro ao adicionar aresta.", variant: "destructive" });
       return false;
     }
   };

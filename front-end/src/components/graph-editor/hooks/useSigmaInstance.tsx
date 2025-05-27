@@ -47,57 +47,75 @@ export const useSigmaInstance = ({
     console.log('Mode updated in useSigmaInstance:', mode);
   }, [mode]);
 
+  // Node Renderer customizado
+  const customNodeRenderer = (
+    context: CanvasRenderingContext2D,
+    data: PartialButFor<NodeDisplayData, 'x' | 'y'>,
+    settings: any
+  ) => {
+    const size = data.size || 10;
+    const color = data.color || settings.defaultNodeColor;
+    const label = data.label || '';
+
+    // Desenhar círculo do nó
+    context.beginPath();
+    context.arc(data.x, data.y, size, 0, Math.PI * 2, true);
+    context.fillStyle = color;
+    context.fill();
+    context.closePath();
+
+    // Desenhar rótulo centralizado
+    context.fillStyle = '#ffffff'; // Cor do rótulo (branco dentro do vértice)
+    context.font = `${Math.max(size * 0.8, 10)}px sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(label, data.x, data.y);
+  };
+
   // Inicializar Sigma
   const initSigma = (graph: Graph) => {
-    if (!containerRef.current) {
-      console.log('Container not available for sigma init');
-      return;
-    }
-    
+    if (!containerRef.current) return;
+
     console.log('Initializing Sigma with graph order:', graph.order);
-    
-    try {
-      // Aplicar layout se o grafo tiver nós
-      if (graph.order > 0) {
-        if (layoutType === 'circular') {
-          circular.assign(graph);
-        } else if (layoutType === 'forceatlas2') {
-          const settings = forceAtlas2.inferSettings(graph);
-          forceAtlas2.assign(graph, { settings, iterations: 100 });
-        }
+
+    // Layout inicial
+    if (graph.order > 0) {
+      if (layoutType === 'circular') {
+        circular.assign(graph);
+      } else if (layoutType === 'forceatlas2') {
+        const settings = forceAtlas2.inferSettings(graph);
+        forceAtlas2.assign(graph, { settings, iterations: 100 });
       }
-      
-      // Configuração do Sigma
-      const sigmaSettings = {
-        renderEdgeLabels: isWeighted,
-        defaultEdgeType: isDirected ? 'arrow' : 'line',
-        defaultNodeColor: '#1E88E5',
-        defaultEdgeColor: '#757575',
-        labelSize: 14,
-        labelWeight: 'bold' as const,
-        minCameraRatio: 0.1,
-        maxCameraRatio: 5,
-        enableEdgeClickEvents: true,
-        enableEdgeWheelEvents: true,
-        enableEdgeHoverEvents: true,
-      };
-      
-      console.log('Creating Sigma instance with settings:', sigmaSettings);
-      
-      // Inicializar Sigma
-      sigmaRef.current = new Sigma(graph, containerRef.current, sigmaSettings);
-      
-      console.log('Sigma instance created successfully');
-      
-      // Configurar eventos
-      setupSigmaEvents();
-      
-      // Refresh para garantir que tudo seja renderizado
-      sigmaRef.current.refresh();
-      
-    } catch (error) {
-      console.error('Error initializing Sigma:', error);
     }
+
+    const sigmaSettings = {
+      renderEdgeLabels: isWeighted,
+      defaultEdgeType: isDirected ? 'arrow' : 'line',
+      defaultNodeColor: '#1E88E5',
+      defaultEdgeColor: '#757575',
+      labelSize: 14,
+      labelWeight: 'bold' as const,
+      minCameraRatio: 0.1,
+      maxCameraRatio: 5,
+      enableEdgeClickEvents: true,
+      enableEdgeWheelEvents: true,
+      enableEdgeHoverEvents: true,
+      labelDensity: 0,
+      labelGridCellSize: 0,
+      labelRenderedSizeThreshold: 0,
+    };
+
+    sigmaRef.current = new Sigma(graph, containerRef.current, {
+      ...sigmaSettings,
+      nodeProgramClasses: {
+        default: customNodeRenderer,
+      }
+    });
+   
+     window.sigmaInstance = sigmaRef.current; // Torna acessível globalmente para refresh externo
+
+    setupSigmaEvents();
+    sigmaRef.current.refresh();
   };
 
   // Configurar eventos do Sigma
