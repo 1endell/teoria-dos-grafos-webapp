@@ -1,6 +1,8 @@
-import { NodeAttributes, EdgeAttributes } from 'graphology-types';
-
 export type EditorMode = 'select' | 'addNode' | 'addEdge' | 'pan';
+
+export type NodeAttributes = Record<string, any>;
+
+export type EdgeAttributes = Record<string, any>;
 
 export interface NodeProperties {
   label: string;

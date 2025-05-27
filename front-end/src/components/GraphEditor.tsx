@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import Graph from 'graphology';
 import GraphEditorToolbar from './graph-editor/GraphEditorToolbar';
 import GraphEditorCanvas from './graph-editor/GraphEditorCanvas';
-import GraphEditorSidebar from './graph-editor/GraphEditorSidebar';
+import GraphEditorSidebar from './graph-editor/GraphPlatformSidebar';
 import { useGraphEditor } from './graph-editor/hooks/useGraphEditor';
 import { useSigmaInstance } from './graph-editor/hooks/useSigmaInstance';
 import { GraphEditorProps } from './graph-editor/types';
@@ -172,6 +172,10 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
         onResetZoom={resetZoom}
         onRemoveSelectedNode={handleRemoveSelectedNode}
         onSaveGraph={saveGraph}
+        nodeProperties={state.nodeProperties}
+        edgeProperties={state.edgeProperties}
+        onNodePropertiesChange={(properties) => updateState({ nodeProperties: properties })}
+        onEdgePropertiesChange={(properties) => updateState({ edgeProperties: properties })}
       />
       
       <div className="flex flex-1 overflow-hidden">
