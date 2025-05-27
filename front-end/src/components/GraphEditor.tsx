@@ -1,16 +1,15 @@
-
 import React, { useEffect, useRef } from 'react';
 import Graph from 'graphology';
 import GraphEditorToolbar from './graph-editor/GraphEditorToolbar';
 import GraphEditorCanvas from './graph-editor/GraphEditorCanvas';
-import GraphEditorSidebar from './graph-editor/GraphPlatformSidebar';
+import GraphPlatformSidebar from './graph-editor/GraphPlatformSidebar';
 import { useGraphEditor } from './graph-editor/hooks/useGraphEditor';
 import { useSigmaInstance } from './graph-editor/hooks/useSigmaInstance';
 import { GraphEditorProps } from './graph-editor/types';
 
 const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     state,
     updateState,
@@ -63,22 +62,19 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     }
   });
 
-  // Inicialização do Sigma e carregamento do grafo
   useEffect(() => {
     console.log('GraphEditor useEffect triggered');
     if (!containerRef.current) {
       console.log('Container ref not available');
       return;
     }
-    
-    // Limpar instância anterior se existir
+
     if (sigmaRef.current) {
       console.log('Cleaning previous sigma instance');
       sigmaRef.current.kill();
       sigmaRef.current = null;
     }
-    
-    // Inicializar grafo vazio ou carregar existente
+
     if (grafoId) {
       console.log('Loading existing graph:', grafoId);
       loadGrafo(grafoId).then((graph) => {
@@ -91,7 +87,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       const graph = initEmptyGraph();
       initSigma(graph);
     }
-    
+
     return () => {
       if (sigmaRef.current) {
         sigmaRef.current.kill();
@@ -100,20 +96,17 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     };
   }, [grafoId]);
 
-  // Alternar tipo de grafo (direcionado/não direcionado)
   const toggleDirected = () => {
     const newIsDirected = !state.isDirected;
     updateState({ isDirected: newIsDirected });
-    
+
     const oldGraph = graphRef.current;
     const newGraph = new Graph({ multi: false, type: newIsDirected ? 'directed' : 'undirected' });
-    
-    // Copiar nós
+
     oldGraph.forEachNode((nodeId, attributes) => {
       newGraph.addNode(nodeId, attributes);
     });
-    
-    // Copiar arestas
+
     oldGraph.forEachEdge((edgeId, attributes, source, target) => {
       const newAttributes = {
         ...attributes,
@@ -121,7 +114,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
       };
       newGraph.addEdge(source, target, newAttributes);
     });
-    
+
     graphRef.current = newGraph;
     if (sigmaRef.current) {
       sigmaRef.current.kill();
@@ -130,11 +123,10 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
     initSigma(newGraph);
   };
 
-  // Alternar pesos nas arestas
   const toggleWeighted = () => {
     const newIsWeighted = !state.isWeighted;
     updateState({ isWeighted: newIsWeighted });
-    
+
     if (sigmaRef.current) {
       sigmaRef.current.setSetting('renderEdgeLabels', newIsWeighted);
       sigmaRef.current.refresh();
@@ -177,7 +169,7 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
         onNodePropertiesChange={(properties) => updateState({ nodeProperties: properties })}
         onEdgePropertiesChange={(properties) => updateState({ edgeProperties: properties })}
       />
-      
+
       <div className="flex flex-1 overflow-hidden">
         <GraphEditorCanvas
           mode={state.mode}
@@ -185,8 +177,8 @@ const GraphEditor: React.FC<GraphEditorProps> = ({ grafoId, onSave }) => {
           isLoading={state.isLoading}
           onContainerRef={handleContainerRef}
         />
-        
-        <GraphEditorSidebar
+
+        <GraphPlatformSidebar
           graph={graphRef.current}
           selectedNode={state.selectedNode}
           isWeighted={state.isWeighted}
