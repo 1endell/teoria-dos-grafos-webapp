@@ -39,6 +39,7 @@ export const useSigmaInstance = ({
 }: UseSigmaInstanceProps) => {
   const sigmaRef = useRef<Sigma | null>(null);
   const currentModeRef = useRef<EditorMode>(mode);
+  const isDraggingRef = useRef(false);
 
   // Atualizar referência do modo
   useEffect(() => {
@@ -76,6 +77,9 @@ export const useSigmaInstance = ({
         labelWeight: 'bold' as const,
         minCameraRatio: 0.1,
         maxCameraRatio: 5,
+        enableEdgeClickEvents: true,
+        enableEdgeWheelEvents: true,
+        enableEdgeHoverEvents: true,
       };
       
       console.log('Creating Sigma instance with settings:', sigmaSettings);
@@ -108,14 +112,19 @@ export const useSigmaInstance = ({
     
     // Evento de clique no canvas
     sigma.on('clickStage', (event: any) => {
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        return;
+      }
+      
       const currentMode = currentModeRef.current;
       console.log('Stage clicked, current mode:', currentMode, 'event:', event);
       
       if (currentMode === 'addNode') {
         // Obter coordenadas exatas do clique para posicionamento preciso
         const coords = sigma.viewportToGraph({
-          x: event.x,
-          y: event.y
+          x: event.event.offsetX,
+          y: event.event.offsetY
         });
         console.log('Adding node at coordinates:', coords);
         onStageClick(coords);
@@ -144,14 +153,59 @@ export const useSigmaInstance = ({
         }
       }
     });
-    
-    // Adicionar suporte para arrastar nós individualmente
-    sigma.getMouseCaptor().on('mousemove', () => {
-      // Apenas para garantir que o evento de mousemove está registrado
+
+    // Configurar dragging de nós individuais
+    let draggedNode: string | null = null;
+    let isDragging = false;
+
+    sigma.on('downNode', (event: any) => {
+      if (currentModeRef.current === 'select') {
+        draggedNode = event.node;
+        isDragging = false;
+        sigma.getGraph().setNodeAttribute(draggedNode, 'highlighted', true);
+        
+        // Prevent sigma to move camera
+        event.preventSigmaDefault();
+        event.original.preventDefault();
+        event.original.stopPropagation();
+      }
     });
-    
-    // Configurar dragging de nós
-    sigma.dragNodes();
+
+    sigma.getMouseCaptor().on('mousemove', (event: any) => {
+      if (draggedNode && currentModeRef.current === 'select') {
+        isDragging = true;
+        isDraggingRef.current = true;
+        
+        // Get new position of node
+        const pos = sigma.viewportToGraph(event);
+        sigma.getGraph().setNodeAttribute(draggedNode, 'x', pos.x);
+        sigma.getGraph().setNodeAttribute(draggedNode, 'y', pos.y);
+        
+        // Prevent sigma to move camera
+        event.preventSigmaDefault();
+        event.original.preventDefault();
+        event.original.stopPropagation();
+      }
+    });
+
+    sigma.getMouseCaptor().on('mouseup', () => {
+      if (draggedNode) {
+        sigma.getGraph().removeNodeAttribute(draggedNode, 'highlighted');
+        draggedNode = null;
+        
+        setTimeout(() => {
+          isDraggingRef.current = false;
+        }, 100);
+      }
+    });
+
+    sigma.getMouseCaptor().on('mouseleave', () => {
+      if (draggedNode) {
+        sigma.getGraph().removeNodeAttribute(draggedNode, 'highlighted');
+        draggedNode = null;
+        isDraggingRef.current = false;
+      }
+    });
   };
 
   // Aplicar layout

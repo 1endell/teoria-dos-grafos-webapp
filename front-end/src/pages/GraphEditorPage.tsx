@@ -1,10 +1,11 @@
+
 import React from 'react';
-import GraphVisualEditor from '@/components/GraphVisualEditor';
+import GraphMainEditor from '@/components/GraphMainEditor';
 
 const GraphEditorPage: React.FC = () => {
   return (
     <div className="h-screen flex flex-col">
-      <GraphVisualEditor />
+      <GraphMainEditor />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { GrafoCreate, GrafoInfo, Grafo, VerticeCreate, ArestaCreate, DadosVisualizacao, ResultadoAlgoritmo, OperacaoGrafos, ComparacaoGrafos, ResultadoComparacao, ImportacaoGrafo, ExportacaoGrafo } from '@/types/graph';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://grafos-api.datasortingmachine.com';
@@ -55,6 +56,13 @@ class GraphService {
 
   async obterGrafo(grafoId: string): Promise<Grafo> {
     return this.request<Grafo>(`/api/v1/grafos/${grafoId}`);
+  }
+
+  async atualizarGrafo(grafoId: string, dados: { nome?: string; direcionado?: boolean; ponderado?: boolean; bipartido?: boolean }): Promise<GrafoInfo> {
+    return this.request<GrafoInfo>(`/api/v1/grafos/${grafoId}`, {
+      method: 'PUT',
+      body: JSON.stringify(dados),
+    });
   }
 
   async excluirGrafo(grafoId: string): Promise<void> {
@@ -143,6 +151,28 @@ class GraphService {
 
   async diferencaGrafos(grafoId1: string, grafoId2: string, nomeResultado?: string): Promise<GrafoInfo> {
     return this.request<GrafoInfo>('/api/v1/operacoes/diferenca', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2,
+        nome_resultado: nomeResultado
+      }),
+    });
+  }
+
+  async diferencaSimetricaGrafos(grafoId1: string, grafoId2: string, nomeResultado?: string): Promise<GrafoInfo> {
+    return this.request<GrafoInfo>('/api/v1/operacoes/diferenca-simetrica', {
+      method: 'POST',
+      body: JSON.stringify({
+        grafo_id1: grafoId1,
+        grafo_id2: grafoId2,
+        nome_resultado: nomeResultado
+      }),
+    });
+  }
+
+  async composicaoGrafos(grafoId1: string, grafoId2: string, nomeResultado?: string): Promise<GrafoInfo> {
+    return this.request<GrafoInfo>('/api/v1/operacoes/composicao', {
       method: 'POST',
       body: JSON.stringify({
         grafo_id1: grafoId1,

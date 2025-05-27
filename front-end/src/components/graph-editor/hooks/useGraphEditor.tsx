@@ -21,7 +21,8 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
     nodeProperties: { label: '', color: '#1E88E5' },
     edgeProperties: { weight: 1.0, color: '#757575' },
     isLoading: false,
-    layoutType: 'circular'
+    layoutType: 'circular',
+    grafoNome: ''
   });
 
   const [grafoInfo, setGrafoInfo] = useState<Grafo | null>(null);
@@ -44,7 +45,8 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
       setGrafoInfo(grafo);
       updateState({ 
         isDirected: grafo.direcionado,
-        isWeighted: grafo.ponderado 
+        isWeighted: grafo.ponderado,
+        grafoNome: grafo.nome
       });
       
       // Obter visualização para posições dos nós
@@ -53,14 +55,14 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
       // Criar novo grafo
       const graph = new Graph({ multi: false, type: grafo.direcionado ? 'directed' : 'undirected' });
       
-      // Adicionar vértices
+      // Adicionar vértices com labels corretos
       visualizacao.vertices.forEach(v => {
         graph.addNode(v.id, {
           x: v.x,
           y: v.y,
-          size: 10,
+          size: 15,
           color: v.atributos?.cor || '#1E88E5',
-          label: v.id
+          label: v.atributos?.label || v.id
         });
       });
       
@@ -69,25 +71,13 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
         if (graph.hasNode(a.origem) && graph.hasNode(a.destino)) {
           graph.addEdge(a.origem, a.destino, {
             size: 2,
-            color: '#757575',
-            label: a.peso !== undefined ? a.peso.toString() : '',
+            color: a.atributos?.cor || '#757575',
+            label: grafo.ponderado && a.peso !== undefined ? a.peso.toString() : '',
             weight: a.peso || 1,
             type: grafo.direcionado ? 'arrow' : 'line'
           });
         }
       });
-      
-      // Atualizar contador de nós
-      const nodeIds = graph.nodes();
-      if (nodeIds.length > 0) {
-        const numericIds = nodeIds
-          .filter(id => /^\d+$/.test(id))
-          .map(id => parseInt(id, 10));
-        
-        if (numericIds.length > 0) {
-          updateState({ nodeCounter: Math.max(...numericIds) + 1 });
-        }
-      }
       
       graphRef.current = graph;
       return graph;
@@ -113,12 +103,45 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
     return graph;
   };
 
+  // Função para gerar posição aleatória mas separada para novos nós
+  const generateNodePosition = () => {
+    const graph = graphRef.current;
+    const minDistance = 100; // Distância mínima entre nós
+    const maxAttempts = 50;
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const x = Math.random() * 800 - 400; // Range de -400 a 400
+      const y = Math.random() * 600 - 300; // Range de -300 a 300
+      
+      let tooClose = false;
+      graph.forEachNode((nodeId, attributes) => {
+        const dx = attributes.x - x;
+        const dy = attributes.y - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < minDistance) {
+          tooClose = true;
+        }
+      });
+      
+      if (!tooClose) {
+        return { x, y };
+      }
+    }
+    
+    // Se não encontrar uma posição boa, usar uma posição em grid
+    const gridSize = Math.ceil(Math.sqrt(graph.order + 1));
+    const nodeIndex = graph.order;
+    const gridX = (nodeIndex % gridSize) * 80 - (gridSize * 40);
+    const gridY = Math.floor(nodeIndex / gridSize) * 80 - (gridSize * 40);
+    
+    return { x: gridX, y: gridY };
+  };
+
   // Adicionar nó
-  const addNode = (coords: {x: number, y: number}) => {
+  const addNode = (coords?: {x: number, y: number}) => {
     console.log('Adding node called with coords:', coords, 'current mode:', state.mode);
     
     const graph = graphRef.current;
-    // Usar UUID para garantir IDs únicos para os vértices
     const nodeId = crypto.randomUUID();
     
     // Coletar nomes já utilizados
@@ -130,13 +153,14 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
     });
     
     const nodeName = state.nodeProperties.label || generateNodeName(usedNames);
+    const position = coords || generateNodePosition();
     
-    console.log('Adding node:', { nodeId, nodeName, coords });
+    console.log('Adding node:', { nodeId, nodeName, position });
     
     try {
       graph.addNode(nodeId, {
-        x: coords.x,
-        y: coords.y,
+        x: position.x,
+        y: position.y,
         size: 15,
         color: state.nodeProperties.color,
         label: nodeName
@@ -209,7 +233,7 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
 
   // Remover nó selecionado
   const removeSelectedNode = () => {
-    if (!state.selectedNode) return;
+    if (!state.selectedNode) return false;
     
     const graph = graphRef.current;
     const nodeLabel = graph.getNodeAttribute(state.selectedNode, 'label');
@@ -267,8 +291,48 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
         });
       });
       
-      // Criar novo grafo
-      const resultado = await criarNovoGrafo(vertices, arestas);
+      let resultado;
+      
+      if (grafoInfo && grafoInfo.id) {
+        // Atualizar grafo existente
+        console.log('Updating existing graph:', grafoInfo.id);
+        
+        // Atualizar informações básicas do grafo
+        await graphService.atualizarGrafo(grafoInfo.id, {
+          nome: state.grafoNome || grafoInfo.nome,
+          direcionado: state.isDirected,
+          ponderado: state.isWeighted
+        });
+        
+        // Para simplificar, vamos recriar o grafo (uma abordagem mais sofisticada seria fazer diff)
+        const currentGraph = await graphService.obterGrafo(grafoInfo.id);
+        
+        // Remover todos os vértices e arestas existentes
+        for (const vertice of currentGraph.vertices) {
+          try {
+            await graphService.removerVertice(grafoInfo.id, vertice.id);
+          } catch (error) {
+            console.log('Vertex already removed or does not exist:', vertice.id);
+          }
+        }
+        
+        // Adicionar novos vértices
+        for (const vertice of vertices) {
+          await graphService.adicionarVertice(grafoInfo.id, vertice);
+        }
+        
+        // Adicionar novas arestas
+        for (const aresta of arestas) {
+          await graphService.adicionarAresta(grafoInfo.id, aresta);
+        }
+        
+        resultado = { id: grafoInfo.id };
+      } else {
+        // Criar novo grafo
+        console.log('Creating new graph');
+        resultado = await criarNovoGrafo(vertices, arestas);
+        setGrafoInfo(await graphService.obterGrafo(resultado.id));
+      }
       
       toast({
         title: "Sucesso",
@@ -293,8 +357,7 @@ export const useGraphEditor = (grafoId?: string, onSave?: (grafoId: string) => v
 
   // Criar novo grafo
   const criarNovoGrafo = async (vertices: VerticeCreate[], arestas: ArestaCreate[]) => {
-    // Usar o nome do grafo definido pelo usuário ou um nome padrão com timestamp
-    const grafoNome = grafoInfo?.nome || state.grafoNome || `Grafo Visual ${new Date().toLocaleString()}`;
+    const grafoNome = state.grafoNome || `Grafo Visual ${new Date().toLocaleString()}`;
     
     const novoGrafo: GrafoCreate = {
       nome: grafoNome,
