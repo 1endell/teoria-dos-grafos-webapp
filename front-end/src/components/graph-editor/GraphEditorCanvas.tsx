@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { EditorMode } from './types';
 
@@ -22,10 +21,11 @@ const GraphEditorCanvas: React.FC<GraphEditorCanvasProps> = ({
   }, [onContainerRef]);
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="flex-1 bg-gray-50 relative"
-      style={{ 
+      style={{
+        height: '100%',
         position: 'relative',
         backgroundImage: `
           linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
@@ -39,19 +39,19 @@ const GraphEditorCanvas: React.FC<GraphEditorCanvasProps> = ({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       )}
-      
+
       {mode === 'addNode' && (
         <div className="absolute top-4 left-4 bg-white p-2 rounded shadow-md z-10">
           <p className="text-sm font-medium">Clique no canvas para adicionar um vértice</p>
           <p className="text-xs text-gray-500">Modo atual: {mode}</p>
         </div>
       )}
-      
+
       {mode === 'addEdge' && (
         <div className="absolute top-4 left-4 bg-white p-2 rounded shadow-md z-10">
           <p className="text-sm font-medium">
-            {sourceNode 
-              ? `Selecione o vértice de destino (origem: ${sourceNode})` 
+            {sourceNode
+              ? `Selecione o vértice de destino (origem: ${sourceNode})`
               : 'Selecione o vértice de origem'}
           </p>
         </div>
