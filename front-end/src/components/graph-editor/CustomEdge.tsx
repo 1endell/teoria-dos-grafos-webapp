@@ -1,16 +1,18 @@
 import React from 'react';
 import { EdgeProps, getStraightPath } from 'reactflow';
 
-const CustomEdge = ({
+const CustomEdge: React.FC<EdgeProps> = ({
   id,
   sourceX,
   sourceY,
   targetX,
   targetY,
+  sourcePosition,
+  targetPosition,
   style = {},
   markerEnd,
-}: EdgeProps) => {
-  // Utilizamos getStraightPath para uma linha reta
+}) => {
+  // Calcula a linha reta entre os centros dos vértices
   const [edgePath] = getStraightPath({
     sourceX,
     sourceY,
@@ -22,12 +24,7 @@ const CustomEdge = ({
     <>
       <path
         id={id}
-        style={{
-          ...style,
-          stroke: '#333',
-          strokeWidth: 2,
-          zIndex: 1, // Opcional, para garantir que a linha fique atrás dos nós
-        }}
+        style={{ ...style, stroke: '#000', strokeWidth: 2 }}
         className="react-flow__edge-path"
         d={edgePath}
         markerEnd={markerEnd}

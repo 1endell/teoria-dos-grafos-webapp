@@ -15,21 +15,23 @@ const CustomNode = ({ data }) => {
         alignItems: 'center',
         fontWeight: 'bold',
         position: 'relative',
-        zIndex: 10, // Deixa o vértice acima das arestas
+        zIndex: 10,
+        cursor: 'grab', // Consistente para todo o nó
+        userSelect: 'none', // Evita seleção de texto
       }}
     >
       {data.label}
 
-      {/* Handle para conexões */}
+      {/* Ocultando Handles visuais e liberando a conexão */}
       <Handle
         type="source"
-        position={Position.Right}
-        style={{ opacity: 0 }} // Ocultar o handle (já usamos a circunferência toda)
+        position={Position.Top}
+        style={{ opacity: 0 }}
       />
       <Handle
         type="target"
-        position={Position.Left}
-        style={{ opacity: 0 }} // Ocultar o handle (já usamos a circunferência toda)
+        position={Position.Bottom}
+        style={{ opacity: 0 }}
       />
     </div>
   );
