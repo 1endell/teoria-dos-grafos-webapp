@@ -1,4 +1,3 @@
-import CustomNode from './graph-editor/CustomNode';
 import React, { useState, useCallback, useRef } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import GraphPlatformSidebar from './graph-editor/GraphPlatformSidebar';
@@ -7,9 +6,11 @@ import { useToast } from '@/hooks/use-toast';
 import GraphEditorToolbarReactFlow from './graph-editor/GraphEditorToolbarReactFlow';
 import ReactFlow, {
   MiniMap, Controls, Background,
-  addEdge, useNodesState, useEdgesState, Connection, Edge, Node
+  addEdge, useNodesState, useEdgesState, Connection, Edge, Node, MarkerType
 } from 'reactflow';
-import CustomEdge from './graph-editor/CustomEdge';
+import CustomNode from './graph-editor/CustomNode';
+import CustomFloatingEdge from './graph-editor/CustomFloatingEdge';
+import CustomConnectionLine from './graph-editor/CustomConnectionLine';
 import 'reactflow/dist/style.css';
 
 const GraphMainEditor: React.FC = () => {
@@ -45,7 +46,7 @@ const GraphMainEditor: React.FC = () => {
       id,
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: { label },
-      type: 'custom', // Usa o tipo customizado
+      type: 'custom',
     };
     setNodes((nds) => nds.concat(newNode));
   };
@@ -92,7 +93,11 @@ const GraphMainEditor: React.FC = () => {
   };
 
   const nodeTypes = { custom: CustomNode };
-  const edgeTypes = { custom: CustomEdge };
+  const edgeTypes = { floating: CustomFloatingEdge };
+  const defaultEdgeOptions = {
+    type: 'floating',
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#333' },
+  };
 
   return (
     <SidebarProvider>
@@ -130,6 +135,8 @@ const GraphMainEditor: React.FC = () => {
               onInit={setReactFlowInstance}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
+              defaultEdgeOptions={defaultEdgeOptions}
+              connectionLineComponent={CustomConnectionLine}
               fitView
             >
               <MiniMap />
