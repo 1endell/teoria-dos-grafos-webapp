@@ -9,7 +9,8 @@ import ReactFlow, {
   addEdge, useNodesState, useEdgesState, Connection, Edge, Node
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import CustomEdge from './graph-editor/CustomEdge'; // Importa o CustomEdge
+import CustomNode from './graph-editor/CustomNode'; // Importa o CustomNode
+import CustomEdge from './graph-editor/CustomEdge'; // (se desejar estilo customizado para arestas)
 
 const GraphMainEditor: React.FC = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -21,27 +22,30 @@ const GraphMainEditor: React.FC = () => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
-  // Define os tipos de arestas disponíveis
-  const edgeTypes = {
-    custom: CustomEdge,
-  };
-
   const onConnect = useCallback((params: Edge | Connection) => {
-    setEdges((eds) => addEdge(
-      { ...params, type: 'custom', data: { label: 'Aresta', color: '#f43f5e', width: 3, dashed: false } }, 
-      eds
-    ));
+    setEdges((eds) => addEdge(params, eds));
   }, [setEdges]);
+
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+  const getNextLabel = () => {
+    const count = nodes.length;
+    let label = '';
+    let n = count;
+    do {
+      label = alphabet[n % 26] + label;
+      n = Math.floor(n / 26) - 1;
+    } while (n >= 0);
+    return label;
+  };
 
   const handleAddNode = () => {
     const id = `${+new Date()}`;
-    const label = String.fromCharCode(97 + nodes.length); // Letras: a, b, c...
+    const label = getNextLabel();
     const newNode: Node = {
       id,
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: { label },
-      type: 'default',
-      style: { borderRadius: '50%', width: 60, height: 60, textAlign: 'center', lineHeight: '60px' }
+      type: 'custom', // Usa o tipo customizado
     };
     setNodes((nds) => nds.concat(newNode));
   };
@@ -69,11 +73,7 @@ const GraphMainEditor: React.FC = () => {
   const handleSaveGraph = () => {
     const graphData = { nodes, edges, name: graphName };
     console.log("Graph Saved:", graphData);
-    toast({
-      title: "Grafo salvo",
-      description: "Os dados do grafo foram salvos no console.",
-      variant: "success",
-    });
+    toast({ title: "Grafo salvo", description: "Os dados foram salvos no console.", variant: "success" });
   };
 
   const handleTitleEdit = () => setIsEditingTitle(true);
@@ -84,45 +84,31 @@ const GraphMainEditor: React.FC = () => {
         setGraphName(newName);
         setIsEditingTitle(false);
       } else {
-        toast({
-          title: "Erro",
-          description: "O nome do grafo não pode estar vazio.",
-          variant: "destructive",
-        });
+        toast({ title: "Erro", description: "Nome do grafo não pode estar vazio.", variant: "destructive" });
       }
     } else if (e.key === 'Escape') {
       setIsEditingTitle(false);
     }
   };
 
+  const nodeTypes = { custom: CustomNode };
+  const edgeTypes = { custom: CustomEdge }; // Se quiser estilo especial para arestas
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <GraphPlatformSidebar onLoadGrafo={() => {}} />
-
         <div className="flex flex-col flex-1">
           <div className="bg-white border-b p-4 flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {isEditingTitle ? (
-                <Input
-                  defaultValue={graphName}
-                  className="text-xl font-semibold"
-                  onKeyDown={handleTitleSave}
-                  onBlur={() => setIsEditingTitle(false)}
-                  autoFocus
-                />
+                <Input defaultValue={graphName} className="text-xl font-semibold" onKeyDown={handleTitleSave} onBlur={() => setIsEditingTitle(false)} autoFocus />
               ) : (
-                <h1
-                  className="text-xl font-semibold cursor-pointer hover:text-blue-600"
-                  onClick={handleTitleEdit}
-                  title="Clique para editar o nome do grafo"
-                >
+                <h1 className="text-xl font-semibold cursor-pointer hover:text-blue-600" onClick={handleTitleEdit} title="Clique para editar o nome">
                   {graphName}
                 </h1>
               )}
-              <span className="text-sm text-gray-500">
-                Vértices: {nodes.length} | Arestas: {edges.length}
-              </span>
+              <span className="text-sm text-gray-500">Vértices: {nodes.length} | Arestas: {edges.length}</span>
             </div>
           </div>
 
@@ -142,7 +128,8 @@ const GraphMainEditor: React.FC = () => {
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
               onInit={setReactFlowInstance}
-              edgeTypes={edgeTypes} // Usa o CustomEdge
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes} // Remova se não desejar estilo especial
               fitView
             >
               <MiniMap />
