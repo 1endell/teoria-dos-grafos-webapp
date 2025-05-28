@@ -1,3 +1,4 @@
+import CustomNode from './graph-editor/CustomNode';
 import React, { useState, useCallback, useRef } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import GraphPlatformSidebar from './graph-editor/GraphPlatformSidebar';
