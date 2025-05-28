@@ -30,15 +30,29 @@ const GraphEditorReactFlow: React.FC = () => {
     [setEdges]
   );
 
+  const [nodeCounter, setNodeCounter] = useState(0);
+
+  const generateLabel = (counter: number) => {
+    let label = '';
+    while (counter >= 0) {
+      label = String.fromCharCode(97 + (counter % 26)) + label; // 97 é 'a'
+      counter = Math.floor(counter / 26) - 1;
+    }
+    return label;
+  };
+
   const handleAddNode = () => {
     const id = `node-${Date.now()}`;
+    const label = generateLabel(nodeCounter);
     const newNode: Node = {
       id,
-      data: { label: `Vértice ${nodes.length + 1}` },
       position: { x: Math.random() * 400, y: Math.random() * 400 },
+      data: { label },
       type: 'default',
+      style: { borderRadius: '50%', width: 50, height: 50, textAlign: 'center', lineHeight: '50px' },
     };
     setNodes((nds) => [...nds, newNode]);
+    setNodeCounter((prev) => prev + 1);
   };
 
   const handleAddEdge = () => {
