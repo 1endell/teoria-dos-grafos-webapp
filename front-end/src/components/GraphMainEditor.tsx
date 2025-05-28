@@ -9,6 +9,20 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import dagre from 'dagre';
+import CustomCircleNode from './graph-editor/CustomCircleNode';
+import CustomEdge from './graph-editor/CustomEdge';
+
+const edgeTypes = {
+  custom: CustomEdge
+};
+
+const nodeTypes = {
+  customCircle: CustomCircleNode
+};
+
+const onConnect = useCallback((params: Edge | Connection) => {
+  setEdges((eds) => addEdge({ ...params, type: 'custom', data: { color: '#f43f5e', width: 3, dashed: false, label: 'Ligação' } }, eds));
+}, [setEdges]);
 
 const GraphMainEditor: React.FC = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -42,7 +56,7 @@ const GraphMainEditor: React.FC = () => {
       id,
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: { label },
-      type: 'default',
+      type: 'customCircle',
       style: {
         borderRadius: '50%',
         width: 50,
@@ -182,6 +196,8 @@ const GraphMainEditor: React.FC = () => {
               onConnect={onConnect}
               onInit={setReactFlowInstance}
               fitView
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
               onNodeClick={(_, node) => setSelectedNodeId(node.id)}
             >
               <MiniMap />
