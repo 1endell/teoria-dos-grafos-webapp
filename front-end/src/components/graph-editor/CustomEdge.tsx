@@ -1,39 +1,37 @@
 import React from 'react';
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, EdgeProps } from 'reactflow';
+import { EdgeProps, getStraightPath } from 'reactflow';
 
-const CustomEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, label }) => {
-  const [path, labelX, labelY] = getBezierPath({
+const CustomEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  style = {},
+  markerEnd,
+}: EdgeProps) => {
+  // Utilizamos getStraightPath para uma linha reta
+  const [edgePath] = getStraightPath({
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
     targetY,
-    targetPosition,
   });
 
   return (
     <>
-      <BaseEdge
+      <path
         id={id}
-        path={path}
-        style={{ stroke: 'red', strokeWidth: 3, fill: 'none' }}
+        style={{
+          ...style,
+          stroke: '#333',
+          strokeWidth: 2,
+          zIndex: 1, // Opcional, para garantir que a linha fique atrás dos nós
+        }}
+        className="react-flow__edge-path"
+        d={edgePath}
+        markerEnd={markerEnd}
       />
-      <EdgeLabelRenderer>
-        <div
-          style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            background: 'white',
-            padding: 4,
-            borderRadius: 4,
-            border: '1px solid #ddd',
-            fontSize: 12,
-          }}
-          className="nodrag nopan"
-        >
-          {label || 'Aresta'}
-        </div>
-      </EdgeLabelRenderer>
     </>
   );
 };

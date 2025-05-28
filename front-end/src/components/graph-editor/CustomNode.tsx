@@ -1,33 +1,36 @@
 import React from 'react';
-import { Handle, NodeProps, Position } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 
-const CustomNode: React.FC<NodeProps> = ({ data }) => {
+const CustomNode = ({ data }) => {
   return (
     <div
       style={{
-        position: 'relative',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        border: '2px solid #000',
+        background: 'white',
+        border: '2px solid #333',
         borderRadius: '50%',
         width: 60,
         height: 60,
-        backgroundColor: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         fontWeight: 'bold',
-        color: '#000',
+        position: 'relative',
+        zIndex: 10, // Deixa o vértice acima das arestas
       }}
     >
       {data.label}
-      {/* Handles invisíveis cobrindo a borda */}
-      <Handle type="source" position={Position.Top} style={{ width: 20, height: 20, opacity: 0 }} />
-      <Handle type="source" position={Position.Right} style={{ width: 20, height: 20, opacity: 0 }} />
-      <Handle type="source" position={Position.Bottom} style={{ width: 20, height: 20, opacity: 0 }} />
-      <Handle type="source" position={Position.Left} style={{ width: 20, height: 20, opacity: 0 }} />
-      <Handle type="target" position={Position.Top} style={{ width: 20, height: 20, opacity: 0 }} />
-      <Handle type="target" position={Position.Right} style={{ width: 20, height: 20, opacity: 0 }} />
-      <Handle type="target" position={Position.Bottom} style={{ width: 20, height: 20, opacity: 0 }} />
-      <Handle type="target" position={Position.Left} style={{ width: 20, height: 20, opacity: 0 }} />
+
+      {/* Handle para conexões */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ opacity: 0 }} // Ocultar o handle (já usamos a circunferência toda)
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ opacity: 0 }} // Ocultar o handle (já usamos a circunferência toda)
+      />
     </div>
   );
 };

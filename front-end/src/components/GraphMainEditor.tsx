@@ -8,9 +8,8 @@ import ReactFlow, {
   MiniMap, Controls, Background,
   addEdge, useNodesState, useEdgesState, Connection, Edge, Node
 } from 'reactflow';
+import CustomEdge from './graph-editor/CustomEdge';
 import 'reactflow/dist/style.css';
-import CustomNode from './graph-editor/CustomNode'; // Importa o CustomNode
-import CustomEdge from './graph-editor/CustomEdge'; // (se desejar estilo customizado para arestas)
 
 const GraphMainEditor: React.FC = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -92,7 +91,7 @@ const GraphMainEditor: React.FC = () => {
   };
 
   const nodeTypes = { custom: CustomNode };
-  const edgeTypes = { custom: CustomEdge }; // Se quiser estilo especial para arestas
+  const edgeTypes = { custom: CustomEdge };
 
   return (
     <SidebarProvider>
@@ -129,7 +128,7 @@ const GraphMainEditor: React.FC = () => {
               onConnect={onConnect}
               onInit={setReactFlowInstance}
               nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes} // Remova se não desejar estilo especial
+              edgeTypes={edgeTypes}
               fitView
             >
               <MiniMap />
