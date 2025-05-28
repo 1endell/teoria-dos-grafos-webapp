@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import GraphEditorToolbarReactFlow from './graph-editor/GraphEditorToolbarReactFlow';
 import ReactFlow, {
   MiniMap, Controls, Background,
-  addEdge, useNodesState, useEdgesState, Connection, Edge, Node, MarkerType
+  addEdge, useNodesState, useEdgesState, Connection, Edge, Node
 } from 'reactflow';
 import CustomNode from './graph-editor/CustomNode';
 import CustomFloatingEdge from './graph-editor/CustomFloatingEdge';
@@ -94,10 +94,6 @@ const GraphMainEditor: React.FC = () => {
 
   const nodeTypes = { custom: CustomNode };
   const edgeTypes = { floating: CustomFloatingEdge };
-  const defaultEdgeOptions = {
-    type: 'floating',
-    markerEnd: { type: MarkerType.ArrowClosed, color: '#333' },
-  };
 
   return (
     <SidebarProvider>
@@ -135,7 +131,6 @@ const GraphMainEditor: React.FC = () => {
               onInit={setReactFlowInstance}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
-              defaultEdgeOptions={defaultEdgeOptions}
               connectionLineComponent={CustomConnectionLine}
               fitView
             >

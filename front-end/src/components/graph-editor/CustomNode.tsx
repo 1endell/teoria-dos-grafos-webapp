@@ -16,22 +16,59 @@ const CustomNode = ({ data }) => {
         fontWeight: 'bold',
         position: 'relative',
         zIndex: 10,
-        cursor: 'grab', // Consistente para todo o nó
-        userSelect: 'none', // Evita seleção de texto
+        pointerEvents: 'auto',
       }}
     >
       {data.label}
 
-      {/* Ocultando Handles visuais e liberando a conexão */}
+      {/* Handles invisíveis para permitir conexão a qualquer ponto */}
       <Handle
         type="source"
         position={Position.Top}
         style={{ opacity: 0 }}
+        isConnectable
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ opacity: 0 }}
+        isConnectable
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ opacity: 0 }}
+        isConnectable
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        style={{ opacity: 0 }}
+        isConnectable
+      />
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ opacity: 0 }}
+        isConnectable
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        style={{ opacity: 0 }}
+        isConnectable
       />
       <Handle
         type="target"
         position={Position.Bottom}
         style={{ opacity: 0 }}
+        isConnectable
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ opacity: 0 }}
+        isConnectable
       />
     </div>
   );
