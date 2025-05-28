@@ -3,80 +3,47 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import GraphPlatformSidebar from './graph-editor/GraphPlatformSidebar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import GraphEditorToolbarReactFlow from './graph-editor/GraphEditorToolbarReactFlow';
 import ReactFlow, {
   MiniMap, Controls, Background,
   addEdge, useNodesState, useEdgesState, Connection, Edge, Node
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import dagre from 'dagre';
-import CustomCircleNode from './graph-editor/CustomCircleNode';
-import CustomEdge from './graph-editor/CustomEdge';
-
-const edgeTypes = {
-  custom: CustomEdge
-};
-
-const nodeTypes = {
-  customCircle: CustomCircleNode
-};
-
-const onConnect = useCallback((params: Edge | Connection) => {
-  setEdges((eds) => addEdge({ ...params, type: 'custom', data: { color: '#f43f5e', width: 3, dashed: false, label: 'Ligação' } }, eds));
-}, [setEdges]);
+import CustomEdge from './graph-editor/CustomEdge'; // Importa o CustomEdge
 
 const GraphMainEditor: React.FC = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const { toast } = useToast();
   const [graphName, setGraphName] = useState('Novo Grafo');
-  const [nodeCounter, setNodeCounter] = useState(0);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  const onConnect = useCallback(
-    (params: Edge | Connection) =>
-      setEdges((eds) =>
-        addEdge(
-          { ...params, type: 'custom', data: { color: '#f43f5e', width: 3, dashed: false, label: 'Aresta' } },
-          eds
-        )
-      ),
-    [setEdges]
-  );
-
-  const generateLabel = (counter: number) => {
-    let label = '';
-    while (counter >= 0) {
-      label = String.fromCharCode(97 + (counter % 26)) + label;
-      counter = Math.floor(counter / 26) - 1;
-    }
-    return label;
+  // Define os tipos de arestas disponíveis
+  const edgeTypes = {
+    custom: CustomEdge,
   };
+
+  const onConnect = useCallback((params: Edge | Connection) => {
+    setEdges((eds) => addEdge(
+      { ...params, type: 'custom', data: { label: 'Aresta', color: '#f43f5e', width: 3, dashed: false } }, 
+      eds
+    ));
+  }, [setEdges]);
 
   const handleAddNode = () => {
     const id = `${+new Date()}`;
-    const label = generateLabel(nodeCounter);
+    const label = String.fromCharCode(97 + nodes.length); // Letras: a, b, c...
     const newNode: Node = {
       id,
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: { label },
-      type: 'customCircle',
-      style: {
-        borderRadius: '50%',
-        width: 50,
-        height: 50,
-        textAlign: 'center',
-        lineHeight: '50px',
-        background: '#4f46e5',
-        color: 'white',
-        border: '2px solid #1e40af'
-      }
+      type: 'default',
+      style: { borderRadius: '50%', width: 60, height: 60, textAlign: 'center', lineHeight: '60px' }
     };
     setNodes((nds) => nds.concat(newNode));
-    setNodeCounter((prev) => prev + 1);
   };
 
   const handleAddEdge = () => {
@@ -88,33 +55,10 @@ const GraphMainEditor: React.FC = () => {
   };
 
   const handleLayout = () => {
-    const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: 'LR' });
-    g.setDefaultEdgeLabel(() => ({}));
-
-    nodes.forEach(node => {
-      g.setNode(node.id, { width: 100, height: 100 });
-    });
-
-    edges.forEach(edge => {
-      g.setEdge(edge.source, edge.target);
-    });
-
-    dagre.layout(g);
-
-    const updatedNodes = nodes.map(node => {
-      const pos = g.node(node.id);
-      return {
-        ...node,
-        position: { x: pos.x - 50, y: pos.y - 50 } // Ajuste para centralizar
-      };
-    });
-
-    setNodes(updatedNodes);
     toast({
-      title: "Layout automático aplicado",
-      description: "Os nós foram organizados automaticamente.",
-      variant: "success",
+      title: "Layout Automático",
+      description: "Layout automático ainda não implementado.",
+      variant: "default",
     });
   };
 
@@ -123,11 +67,7 @@ const GraphMainEditor: React.FC = () => {
   };
 
   const handleSaveGraph = () => {
-    const graphData = {
-      nodes,
-      edges,
-      name: graphName
-    };
+    const graphData = { nodes, edges, name: graphName };
     console.log("Graph Saved:", graphData);
     toast({
       title: "Grafo salvo",
@@ -186,13 +126,13 @@ const GraphMainEditor: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-4 flex gap-2 justify-center">
-            <button onClick={handleAddNode} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Adicionar Vértice</button>
-            <button onClick={handleAddEdge} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Adicionar Aresta</button>
-            <button onClick={handleLayout} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Layout Automático</button>
-            <button onClick={handleResetView} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Resetar Visão</button>
-            <button onClick={handleSaveGraph} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Salvar Grafo</button>
-          </div>
+          <GraphEditorToolbarReactFlow
+            onAddNode={handleAddNode}
+            onAddEdge={handleAddEdge}
+            onLayout={handleLayout}
+            onResetView={handleResetView}
+            onSaveGraph={handleSaveGraph}
+          />
 
           <div className="flex-1 overflow-hidden" ref={reactFlowWrapper}>
             <ReactFlow
@@ -202,10 +142,8 @@ const GraphMainEditor: React.FC = () => {
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
               onInit={setReactFlowInstance}
+              edgeTypes={edgeTypes} // Usa o CustomEdge
               fitView
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              onNodeClick={(_, node) => setSelectedNodeId(node.id)}
             >
               <MiniMap />
               <Controls />
