@@ -48,6 +48,7 @@ export const useSigmaInstance = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // Sigma setup com inicialização única
     if (sigmaRef.current) {
       sigmaRef.current.kill();
       sigmaRef.current = null;
@@ -66,21 +67,21 @@ export const useSigmaInstance = ({
       defaultEdgeType: isDirected ? 'arrow' : 'line',
       defaultNodeColor: '#1E88E5',
       defaultEdgeColor: '#757575',
-      nodeReducer
+      nodeReducer,
+      allowInvalidContainer: true
     };
 
     sigmaRef.current = new Sigma(graph, containerRef.current, sigmaSettings);
     window.sigmaInstance = sigmaRef.current;
 
     setupEvents();
-    applyLayout(layoutType);
     sigmaRef.current.refresh();
 
     return () => {
       sigmaRef.current?.kill();
       sigmaRef.current = null;
     };
-  }, [containerRef, graph, isDirected, isWeighted, layoutType]);
+  }, [containerRef, graph, isDirected, isWeighted]);
 
   const setupEvents = () => {
     if (!sigmaRef.current) return;
@@ -104,13 +105,12 @@ export const useSigmaInstance = ({
         if (!sourceNode) {
           onSourceNodeChange(nodeId);
         } else if (sourceNode !== nodeId) {
-          onNodeClick(nodeId);  // target node
+          onNodeClick(nodeId);
           onSourceNodeChange(null);
         }
       }
     });
 
-    // Arrastar nós individualmente no modo SELECT
     sigma.on('downNode', e => {
       if (modeRef.current === 'select') {
         draggedNodeRef.current = e.node;
@@ -122,9 +122,10 @@ export const useSigmaInstance = ({
     sigma.getMouseCaptor().on('mousemove', e => {
       if (draggedNodeRef.current && modeRef.current === 'select') {
         isDraggingRef.current = true;
-        const pos = sigmaRef.current!.viewportToGraph(e);
-        graph.setNodeAttribute(draggedNodeRef.current, 'x', pos.x);
-        graph.setNodeAttribute(draggedNodeRef.current, 'y', pos.y);
+        const pos = sigma.viewportToGraph(e);
+        // 🔥 CORREÇÃO: atualizar apenas o nó arrastado
+        graph.mergeNodeAttributes(draggedNodeRef.current, { x: pos.x, y: pos.y });
+        sigma.refresh();
       }
     });
 
@@ -148,6 +149,7 @@ export const useSigmaInstance = ({
       const settings = forceAtlas2.inferSettings(graph);
       forceAtlas2.assign(graph, { settings, iterations: 100 });
     }
+    sigmaRef.current?.refresh();
   };
 
   const resetZoom = () => sigmaRef.current?.getCamera().animatedReset();
