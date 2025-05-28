@@ -26,7 +26,7 @@ const GraphMainEditor: React.FC = () => {
     removeSelectedNode,
     saveGraph,
     handleModeChange
-  } = useGraphEditor();
+  } = useGraphEditor(undefined, () => {});
 
   const {
     sigmaRef,
