@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -10,20 +10,20 @@ import ReactFlow, {
   Edge,
   Node,
   ReactFlowProvider,
-  useReactFlow
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import GraphEditorToolbarReactFlow from './GraphEditorToolbarReactFlow';
+
+const initialNodes: Node[] = [];
+
+const initialEdges: Edge[] = [];
 
 const GraphEditorReactFlow: React.FC = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const { fitView, getNodes, getEdges, setViewport } = useReactFlow();
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const { fitView, getNodes, getEdges } = useReactFlow();
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -35,7 +35,7 @@ const GraphEditorReactFlow: React.FC = () => {
     const newNode: Node = {
       id,
       data: { label: `Vértice ${nodes.length + 1}` },
-      position: { x: Math.random() * 600, y: Math.random() * 400 },
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
       type: 'default',
     };
     setNodes((nds) => [...nds, newNode]);
@@ -52,12 +52,7 @@ const GraphEditorReactFlow: React.FC = () => {
           type: 'default',
         };
         setEdges((eds) => [...eds, newEdge]);
-        setSelectedNodeId(null);
-      } else {
-        toast({ title: "Erro", description: "Nenhum outro vértice disponível para conectar.", variant: "destructive" });
       }
-    } else {
-      toast({ title: "Aviso", description: "Selecione um vértice primeiro.", variant: "default" });
     }
   };
 
@@ -65,10 +60,10 @@ const GraphEditorReactFlow: React.FC = () => {
     setNodes((nds) =>
       nds.map((node) => ({
         ...node,
-        position: { x: Math.random() * 600, y: Math.random() * 400 },
+        position: { x: Math.random() * 400, y: Math.random() * 400 },
       }))
     );
-    setEdges((eds) => [...eds]); // Forçar refresh
+    setEdges((eds) => [...eds]);
   };
 
   const handleResetView = () => {
@@ -78,37 +73,35 @@ const GraphEditorReactFlow: React.FC = () => {
   const handleSaveGraph = () => {
     const data = { nodes: getNodes(), edges: getEdges() };
     console.log('Grafo salvo:', data);
-    toast({ title: "Sucesso", description: "Grafo salvo no console!", variant: "success" });
+    alert('Grafo salvo no console!');
   };
 
   return (
     <ReactFlowProvider>
-      <div className="w-full h-full flex flex-col">
-        {/* Canvas React Flow */}
-        <div className="flex-1" ref={reactFlowWrapper}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-            fitView
-          >
-            <Background />
-            <MiniMap />
-            <Controls />
-          </ReactFlow>
-        </div>
+      <div style={{ width: '100%', height: '600px' }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+          fitView
+        >
+          <Background />
+          <Controls />
+          <MiniMap />
+        </ReactFlow>
+      </div>
 
-        {/* Toolbar Interna */}
-        <div className="flex gap-2 p-2 border-t bg-white shadow-sm">
-          <Button onClick={handleAddNode}>Adicionar Vértice</Button>
-          <Button onClick={handleAddEdge} disabled={!selectedNodeId}>Criar Aresta</Button>
-          <Button onClick={handleLayout}>Aplicar Layout</Button>
-          <Button onClick={handleResetView}>Resetar Visão</Button>
-          <Button onClick={handleSaveGraph}>Salvar Grafo</Button>
-        </div>
+      <div className="mt-2">
+        <GraphEditorToolbarReactFlow
+          onAddNode={handleAddNode}
+          onAddEdge={handleAddEdge}
+          onLayout={handleLayout}
+          onResetView={handleResetView}
+          onSaveGraph={handleSaveGraph}
+        />
       </div>
     </ReactFlowProvider>
   );

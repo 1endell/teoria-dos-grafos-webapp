@@ -4,35 +4,25 @@ import { Button } from '@/components/ui/button';
 interface GraphEditorToolbarReactFlowProps {
   onAddNode: () => void;
   onAddEdge: () => void;
-  onResetView: () => void;
   onLayout: () => void;
+  onResetView: () => void;
   onSaveGraph: () => void;
 }
 
 const GraphEditorToolbarReactFlow: React.FC<GraphEditorToolbarReactFlowProps> = ({
   onAddNode,
   onAddEdge,
-  onResetView,
   onLayout,
-  onSaveGraph
+  onResetView,
+  onSaveGraph,
 }) => {
   return (
-    <div className="flex space-x-2 p-2 bg-gray-100 border-b">
-      <Button variant="default" onClick={onAddNode}>
-        Adicionar Vértice
-      </Button>
-      <Button variant="default" onClick={onAddEdge}>
-        Adicionar Aresta
-      </Button>
-      <Button variant="default" onClick={onLayout}>
-        Layout Automático
-      </Button>
-      <Button variant="default" onClick={onResetView}>
-        Resetar Visão
-      </Button>
-      <Button variant="default" onClick={onSaveGraph}>
-        Salvar Grafo
-      </Button>
+    <div className="flex gap-2 p-2 bg-gray-100 border-b border-gray-300">
+      <Button onClick={onAddNode} variant="default">Adicionar Vértice</Button>
+      <Button onClick={onAddEdge} variant="outline">Adicionar Aresta</Button>
+      <Button onClick={onLayout} variant="outline">Layout Automático</Button>
+      <Button onClick={onResetView} variant="outline">Resetar Visão</Button>
+      <Button onClick={onSaveGraph} variant="secondary">Salvar Grafo</Button>
     </div>
   );
 };
