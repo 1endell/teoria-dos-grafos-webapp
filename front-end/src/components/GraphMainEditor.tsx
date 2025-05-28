@@ -1,75 +1,14 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import GraphPlatformSidebar from './graph-editor/GraphPlatformSidebar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import GraphEditorToolbarReactFlow from './graph-editor/GraphEditorToolbarReactFlow';
-import ReactFlow, {
-  MiniMap, Controls, Background,
-  addEdge, useNodesState, useEdgesState, Connection, Edge, Node
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+import GraphEditorReactFlow from './graph-editor/GraphEditorReactFlow';
 
 const GraphMainEditor: React.FC = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const { toast } = useToast();
   const [graphName, setGraphName] = useState('Novo Grafo');
-
-  // React Flow States
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
-
-  const onConnect = useCallback((params: Edge | Connection) => {
-    setEdges((eds) => addEdge(params, eds));
-  }, [setEdges]);
-
-  const handleAddNode = () => {
-    const newNode: Node = {
-      id: `${+new Date()}`,
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: { label: `Node ${nodes.length + 1}` },
-      type: 'default',
-    };
-    setNodes((nds) => nds.concat(newNode));
-  };
-
-  const handleAddEdge = () => {
-    toast({
-      title: "Modo Aresta",
-      description: "Conecte dois nós para criar uma aresta.",
-      variant: "default",
-    });
-    // Em React Flow, conectar nós pode ser feito clicando no source e target (modo interativo)
-    // Se desejar um modo programático, podemos implementar aqui
-  };
-
-  const handleLayout = () => {
-    toast({
-      title: "Layout Automático",
-      description: "Layout automático ainda não implementado.",
-      variant: "default",
-    });
-  };
-
-  const handleResetView = () => {
-    reactFlowInstance?.fitView();
-  };
-
-  const handleSaveGraph = () => {
-    const graphData = {
-      nodes,
-      edges,
-      name: graphName
-    };
-    console.log("Graph Saved:", graphData);
-    toast({
-      title: "Grafo salvo",
-      description: "Os dados do grafo foram salvos no console.",
-      variant: "success",
-    });
-  };
+  const { toast } = useToast();
 
   const handleTitleEdit = () => setIsEditingTitle(true);
   const handleTitleSave = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -93,7 +32,7 @@ const GraphMainEditor: React.FC = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <GraphPlatformSidebar onLoadGrafo={() => {}} />
+        <GraphPlatformSidebar onLoadGrafo={() => {}} /> {/* Carregar grafos futuro */}
 
         <div className="flex flex-col flex-1">
           {/* Header com título editável */}
@@ -116,36 +55,12 @@ const GraphMainEditor: React.FC = () => {
                   {graphName}
                 </h1>
               )}
-              <span className="text-sm text-gray-500">
-                Vértices: {nodes.length} | Arestas: {edges.length}
-              </span>
             </div>
           </div>
 
-          {/* Toolbar React Flow */}
-          <GraphEditorToolbarReactFlow
-            onAddNode={handleAddNode}
-            onAddEdge={handleAddEdge}
-            onLayout={handleLayout}
-            onResetView={handleResetView}
-            onSaveGraph={handleSaveGraph}
-          />
-
-          {/* React Flow Canvas */}
-          <div className="flex-1 overflow-hidden" ref={reactFlowWrapper}>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onInit={setReactFlowInstance}
-              fitView
-            >
-              <MiniMap />
-              <Controls />
-              <Background />
-            </ReactFlow>
+          {/* React Flow Editor completo */}
+          <div className="flex-1 overflow-hidden">
+            <GraphEditorReactFlow />
           </div>
         </div>
       </div>
