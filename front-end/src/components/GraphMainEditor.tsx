@@ -36,9 +36,16 @@ const GraphMainEditor: React.FC = () => {
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  const onConnect = useCallback((params: Edge | Connection) => {
-    setEdges((eds) => addEdge(params, eds));
-  }, [setEdges]);
+  const onConnect = useCallback(
+    (params: Edge | Connection) =>
+      setEdges((eds) =>
+        addEdge(
+          { ...params, type: 'custom', data: { color: '#f43f5e', width: 3, dashed: false, label: 'Aresta' } },
+          eds
+        )
+      ),
+    [setEdges]
+  );
 
   const generateLabel = (counter: number) => {
     let label = '';

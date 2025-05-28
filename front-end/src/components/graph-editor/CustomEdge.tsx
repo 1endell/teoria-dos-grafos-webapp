@@ -1,37 +1,56 @@
 import React from 'react';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, EdgeProps } from 'reactflow';
 
-const CustomEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, data }) => {
+const CustomEdge: React.FC<EdgeProps> = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style = {},
+  markerEnd,
+  data
+}) => {
+  // Definindo estilo customizado (com dados opcionais)
+  const strokeColor = data?.color || '#f43f5e'; // Vermelho padrão
+  const strokeWidth = data?.width || 3;
+  const dashed = data?.dashed ? '5,5' : undefined;
+
   const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX, sourceY, sourcePosition,
-    targetX, targetY, targetPosition
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition
   });
 
   return (
     <>
-      {/* Linha personalizada */}
       <BaseEdge
         path={edgePath}
-        markerEnd={markerEnd}
         style={{
-          stroke: data?.color || '#4f46e5', // Cor da aresta
-          strokeWidth: data?.width || 2, // Espessura
-          strokeDasharray: data?.dashed ? '5,5' : '0' // Tracejado se desejado
+          stroke: strokeColor,
+          strokeWidth: strokeWidth,
+          strokeDasharray: dashed,
+          ...style
         }}
+        markerEnd={markerEnd}
       />
-
-      {/* Label opcional */}
       {data?.label && (
         <EdgeLabelRenderer>
           <div
             style={{
               position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              fontSize: 12,
-              padding: 2,
-              background: 'white',
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              background: '#fff',
+              padding: '2px 4px',
               borderRadius: 4,
-              border: '1px solid #ccc'
+              fontSize: 12,
+              pointerEvents: 'all',
+              border: `1px solid ${strokeColor}`
             }}
           >
             {data.label}
