@@ -1,5 +1,4 @@
-import { Handle } from '@xyflow/react';
-
+export default function CustomNode({ id }) {
   const size = 60 * 0.4;
 
   return (
