@@ -7,6 +7,7 @@ import {
   useEdgesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { ReactFlowProvider } from 'reactflow';
 
 import CustomNode from './components/graph-editor/CustomNode';
 import CustomFloatingEdge from './components/graph-editor/CustomFloatingEdge';
