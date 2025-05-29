@@ -56,6 +56,13 @@ const App = () => {
     [setEdges, isCtrlPressed]
   );
 
+  // Evitar iniciar conexão sem CTRL
+  const onConnectStart = (event) => {
+    if (!event.ctrlKey) {
+      event.preventDefault(); // Bloqueia o comportamento de conexão
+    }
+  };
+
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
       <div style={{ flexGrow: 1, position: 'relative' }}>
@@ -65,6 +72,7 @@ const App = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onConnectStart={onConnectStart}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
