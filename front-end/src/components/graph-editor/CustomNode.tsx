@@ -1,7 +1,7 @@
 import { Handle } from '@xyflow/react';
 
 export default function CustomNode({ id }) {
-  const size = 60 * 0.4; // 40% do tamanho original
+  const size = 60 * 0.4;
 
   return (
     <div
@@ -15,43 +15,10 @@ export default function CustomNode({ id }) {
         justifyContent: 'center',
         alignItems: 'center',
         fontWeight: 'bold',
-        position: 'relative',
-        cursor: 'move', // Cursor de arrastar por padrão
+        cursor: 'move', // Cursor para indicar arrastar
       }}
     >
       {id}
-
-      {/* Handle centralizado e invisível para permitir conexão */}
-      <Handle
-        type="source"
-        position="top"
-        style={{
-          width: size,
-          height: size,
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          borderRadius: '50%',
-          opacity: 0,
-          cursor: 'crosshair', // Quando passando sobre o handle
-        }}
-      />
-
-      <Handle
-        type="target"
-        position="top"
-        style={{
-          width: size,
-          height: size,
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          borderRadius: '50%',
-          opacity: 0,
-        }}
-      />
     </div>
   );
 }

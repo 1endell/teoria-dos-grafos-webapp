@@ -42,8 +42,6 @@ const App = () => {
   const onConnectStart = (event) => {
     if (event.ctrlKey) {
       setAllowConnect(true);
-    } else {
-      setAllowConnect(false);
     }
   };
 
@@ -55,24 +53,11 @@ const App = () => {
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
       <div style={{ flexGrow: 1, position: 'relative' }}>
         <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
+          ...
+          connectionMode={allowConnect ? 'loose' : 'invalid'} // Habilitar conexões apenas com CTRL
           onConnectStart={onConnectStart}
           onConnectEnd={onConnectEnd}
-          connectionMode={allowConnect ? 'loose' : 'invalid'} // Só permite conexão se CTRL estiver pressionado
-          fitView
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          connectionLineComponent={CustomConnectionLine}
-          connectionLineStyle={connectionLineStyle}
-          style={{ width: '100%', height: '100%' }}
         >
-          <Background />
-        </ReactFlow>
-
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
