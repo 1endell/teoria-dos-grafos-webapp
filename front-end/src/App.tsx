@@ -53,11 +53,23 @@ const App = () => {
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
       <div style={{ flexGrow: 1, position: 'relative' }}>
         <ReactFlow
-          ...
-          connectionMode={allowConnect ? 'loose' : 'invalid'} // Habilitar conexões apenas com CTRL
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          connectionMode={allowConnect ? 'loose' : 'invalid'}
           onConnectStart={onConnectStart}
           onConnectEnd={onConnectEnd}
+          fitView
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          connectionLineComponent={CustomConnectionLine}
+          connectionLineStyle={connectionLineStyle}
+          style={{ width: '100%', height: '100%' }}
         >
+          <Background />
+        </ReactFlow>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
