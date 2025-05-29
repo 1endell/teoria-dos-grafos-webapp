@@ -8,9 +8,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import CustomNode from './CustomNode';
-import FloatingEdge from './FloatingEdge';
-import CustomConnectionLine from './CustomConnectionLine';
+import CustomNode from './components/graph-editor/CustomNode';
+import CustomFloatingEdge from './components/graph-editor/CustomFloatingEdge';
+import CustomConnectionLine from './components/graph-editor/CustomConnectionLine';
 
 const initialNodes = [
   { id: '1', type: 'custom', position: { x: 0, y: 0 } },
