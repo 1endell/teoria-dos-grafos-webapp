@@ -13,17 +13,11 @@ export default function CustomNode({ id }) {
         justifyContent: 'center',
         alignItems: 'center',
         fontWeight: 'bold',
+        cursor: 'pointer',
+        userSelect: 'none',
       }}
     >
       {id}
-      <Handle type="source" position={Position.Top} style={{ opacity: 0 }} />
-      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
-      <Handle type="source" position={Position.Left} style={{ opacity: 0 }} />
-      <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Bottom} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Right} style={{ opacity: 0 }} />
     </div>
   );
 }

@@ -48,6 +48,7 @@ const App = () => {
         edgeTypes={edgeTypes}
         connectionLineComponent={CustomConnectionLine}
         connectionLineStyle={connectionLineStyle}
+        connectionMode="loose"  // Permite conexões em toda a área do vértice
         style={{ width: '100%', height: '100%' }}
       >
         <Background />
