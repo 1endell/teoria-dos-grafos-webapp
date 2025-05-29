@@ -1,14 +1,15 @@
+
 import React from 'react';
 import { Handle, Position } from 'reactflow';
 
 const CustomNode = ({ data, selected }) => {
-  const { label, color = '#ffcc00', icon = '⚙️', size = 60 } = data;
-  
+  const { label, color = '#4f46e5', size = 60 } = data;
+
   return (
     <div
       style={{
         background: color,
-        border: selected ? '3px solid #333' : '2px solid #333',
+        border: selected ? '3px solid #333' : '2px solid #1e40af',
         borderRadius: '50%',
         width: size,
         height: size,
@@ -17,21 +18,21 @@ const CustomNode = ({ data, selected }) => {
         alignItems: 'center',
         fontWeight: 'bold',
         fontSize: size / 3,
+        color: 'white',
         position: 'relative',
-        zIndex: 10,
         cursor: 'pointer',
         userSelect: 'none',
       }}
     >
-      {/* Ícone central */}
-      <span style={{ position: 'absolute', top: '5%', left: '50%', transform: 'translate(-50%, 0)' }}>{icon}</span>
-      {/* Label */}
-      <span style={{ position: 'absolute', bottom: '10%', left: '50%', transform: 'translate(-50%, 0)', fontSize: size / 4 }}>
-        {label}
-      </span>
-      {/* Oculta Handles visuais, mas permite conexão em qualquer ponto */}
+      {label}
+      <Handle type="source" position={Position.Top} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Left} style={{ opacity: 0 }} />
       <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Bottom} style={{ opacity: 0 }} />
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Right} style={{ opacity: 0 }} />
     </div>
   );
 };

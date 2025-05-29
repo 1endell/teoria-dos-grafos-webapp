@@ -45,7 +45,7 @@ const GraphEditorReactFlow: React.FC = () => {
     const newNode: Node = {
       id,
       data: { label },
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      position: { x: viewport.x + window.innerWidth / 2 - 25, y: viewport.y + window.innerHeight / 2 - 25 },
       type: 'default',
       style: {
         borderRadius: '50%',
@@ -81,7 +81,7 @@ const GraphEditorReactFlow: React.FC = () => {
     setNodes((nds) =>
       nds.map((node) => ({
         ...node,
-        position: { x: Math.random() * 400, y: Math.random() * 400 }
+        position: { x: viewport.x + window.innerWidth / 2 - 25, y: viewport.y + window.innerHeight / 2 - 25 }
       }))
     );
     setEdges((eds) => [...eds]);
@@ -98,7 +98,7 @@ const GraphEditorReactFlow: React.FC = () => {
   };
 
   return (
-    <ReactFlowProvider>
+    <ReactFlowProvider connectionLineType="straight" connectionLineStyle={{ stroke: "#000", strokeWidth: 2 }} defaultEdgeOptions={{ type: "default", markerEnd: { type: "arrowclosed" } }} panOnDrag zoomOnScroll nodeDraggable fitView>
       <div style={{ width: '100%', height: '600px' }}>
         <ReactFlow
           nodes={nodes}
@@ -106,7 +106,7 @@ const GraphEditorReactFlow: React.FC = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+          onNodeClick={(_, node) = connectionLineType="straight" connectionLineStyle={{ stroke: "#000", strokeWidth: 2 }} defaultEdgeOptions={{ type: "default", markerEnd: { type: "arrowclosed" } }} panOnDrag zoomOnScroll nodeDraggable fitView> setSelectedNodeId(node.id)}
           fitView
         >
           <Background />
