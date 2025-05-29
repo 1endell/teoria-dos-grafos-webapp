@@ -1,15 +1,16 @@
-import React from 'react';
-import { BaseEdge, getBezierPath } from 'reactflow';
+import { BaseEdge, getStraightPath, useInternalNode } from '@xyflow/react';
+import { getEdgeParams } from './utils.js';
 
-const CustomFloatingEdge = ({ id, sourceX, sourceY, targetX, targetY }) => {
-  const [edgePath] = getBezierPath({ sourceX, sourceY, targetX, targetY });
-  return (
-    <BaseEdge
-      id={id}
-      path={edgePath}
-      style={{ stroke: '#000', strokeWidth: 2 }}
-    />
-  );
-};
+function FloatingEdge({ id, source, target }) {
+  const sourceNode = useInternalNode(source);
+  const targetNode = useInternalNode(target);
 
-export default CustomFloatingEdge;
+  if (!sourceNode || !targetNode) return null;
+
+  const { sx, sy, tx, ty } = getEdgeParams(sourceNode, targetNode);
+  const [path] = getStraightPath({ sourceX: sx, sourceY: sy, targetX: tx, targetY: ty });
+
+  return <BaseEdge id={id} path={path} style={{ stroke: '#000', strokeWidth: 2 }} />;
+}
+
+export default FloatingEdge;

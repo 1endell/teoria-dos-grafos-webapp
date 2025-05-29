@@ -1,31 +1,29 @@
+import { Handle, Position } from '@xyflow/react';
 
-import React from 'react';
-
-const CustomNode = ({ data, selected }) => {
-  const { label, color = '#4f46e5', size = 60 } = data;
-
+export default function CustomNode({ id }) {
   return (
     <div
       style={{
-        background: color,
-        border: selected ? '3px solid #333' : '2px solid #1e40af',
+        background: '#4f46e5',
+        color: 'white',
         borderRadius: '50%',
-        width: size,
-        height: size,
+        width: 60,
+        height: 60,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         fontWeight: 'bold',
-        fontSize: size / 3,
-        color: 'white',
-        position: 'relative',
-        cursor: 'pointer',
-        userSelect: 'none',
       }}
     >
-      {label}
+      {id}
+      <Handle type="source" position={Position.Top} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Left} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Bottom} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
+      <Handle type="target" position={Position.Right} style={{ opacity: 0 }} />
     </div>
   );
-};
-
-export default CustomNode;
+}
