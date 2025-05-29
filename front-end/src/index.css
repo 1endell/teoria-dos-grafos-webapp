@@ -99,3 +99,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Força as arestas atrás dos nós */
+.react-flow__edges {
+  z-index: 0 !important;
+}
+
+.react-flow__nodes {
+  z-index: 1 !important;
+}
+
+/* Opcional: estiliza os vértices para ficarem mais destacados */
+.react-flow__node {
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.react-flow__node:hover {
+  transform: scale(1.1);
+}
