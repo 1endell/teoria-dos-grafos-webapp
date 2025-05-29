@@ -40,3 +40,25 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Garante que as arestas fiquem atrás dos vértices */
+.react-flow__edges {
+  z-index: 0 !important;
+}
+
+.react-flow__nodes {
+  z-index: 1 !important;
+}
+
+/* Estilo global para os vértices (opcional) */
+.react-flow__node.custom {
+  background-color: #ffcc00 !important;
+  border: 2px solid #333 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  font-weight: bold !important;
+  width: 50px !important;
+  height: 50px !important;
+}

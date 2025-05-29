@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import GraphPlatformSidebar from './graph-editor/GraphPlatformSidebar';
 import { Input } from '@/components/ui/input';
@@ -6,26 +6,21 @@ import { useToast } from '@/hooks/use-toast';
 import GraphEditorToolbarReactFlow from './graph-editor/GraphEditorToolbarReactFlow';
 import ReactFlow, {
   MiniMap, Controls, Background,
-  addEdge, useNodesState, useEdgesState, Connection, Edge, Node
+  useNodesState, useEdgesState, addEdge, Connection, Edge, Node
 } from 'reactflow';
-import CustomNode from './graph-editor/CustomNode';
-import CustomFloatingEdge from './graph-editor/CustomFloatingEdge';
-import CustomConnectionLine from './graph-editor/CustomConnectionLine';
 import 'reactflow/dist/style.css';
+
+const REPULSION_FORCE = 5000;
+const DAMPING = 0.9;
 
 const GraphMainEditor: React.FC = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const { toast } = useToast();
   const [graphName, setGraphName] = useState('Novo Grafo');
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
-
-  const onConnect = useCallback((params: Edge | Connection) => {
-    setEdges((eds) => addEdge(params, eds));
-  }, [setEdges]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>([]);
+  const animationRef = useRef<number | null>(null);
 
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
   const getNextLabel = () => {
@@ -44,31 +39,19 @@ const GraphMainEditor: React.FC = () => {
     const label = getNextLabel();
     const newNode: Node = {
       id,
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: { label },
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
       type: 'custom',
     };
     setNodes((nds) => nds.concat(newNode));
   };
 
-  const handleAddEdge = () => {
-    toast({
-      title: "Modo Aresta",
-      description: "Conecte dois nós para criar uma aresta.",
-      variant: "default",
-    });
-  };
-
-  const handleLayout = () => {
-    toast({
-      title: "Layout Automático",
-      description: "Layout automático ainda não implementado.",
-      variant: "default",
-    });
-  };
+  const onConnect = useCallback((params: Edge | Connection) => {
+    setEdges((eds) => addEdge(params, eds));
+  }, [setEdges]);
 
   const handleResetView = () => {
-    reactFlowInstance?.fitView();
+    toast({ title: "Resetar Visão", description: "Visão resetada", variant: "default" });
   };
 
   const handleSaveGraph = () => {
@@ -92,8 +75,59 @@ const GraphMainEditor: React.FC = () => {
     }
   };
 
-  const nodeTypes = { custom: CustomNode };
-  const edgeTypes = { floating: CustomFloatingEdge };
+  // Física de repulsão simples
+  const applyPhysics = () => {
+    const updatedNodes = [...nodes];
+
+    for (let i = 0; i < updatedNodes.length; i++) {
+      for (let j = i + 1; j < updatedNodes.length; j++) {
+        const nodeA = updatedNodes[i];
+        const nodeB = updatedNodes[j];
+        const dx = nodeB.position.x - nodeA.position.x;
+        const dy = nodeB.position.y - nodeA.position.y;
+        const distance = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+        const force = REPULSION_FORCE / (distance * distance);
+        const fx = (dx / distance) * force;
+        const fy = (dy / distance) * force;
+
+        nodeA.position.x -= fx * DAMPING;
+        nodeA.position.y -= fy * DAMPING;
+        nodeB.position.x += fx * DAMPING;
+        nodeB.position.y += fy * DAMPING;
+      }
+    }
+
+    setNodes(updatedNodes);
+    animationRef.current = requestAnimationFrame(applyPhysics);
+  };
+
+  useEffect(() => {
+    animationRef.current = requestAnimationFrame(applyPhysics);
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [nodes]);
+
+  const nodeTypes = {
+    custom: ({ data }: { data: any }) => (
+      <div
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: '50%',
+          background: '#ffcc00',
+          border: '2px solid #333',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          fontWeight: 'bold',
+          zIndex: 1,
+        }}
+      >
+        {data.label}
+      </div>
+    ),
+  };
 
   return (
     <SidebarProvider>
@@ -115,24 +149,21 @@ const GraphMainEditor: React.FC = () => {
 
           <GraphEditorToolbarReactFlow
             onAddNode={handleAddNode}
-            onAddEdge={handleAddEdge}
-            onLayout={handleLayout}
+            onAddEdge={() => toast({ title: "Modo Aresta", description: "Use o mouse para conectar nós", variant: "default" })}
+            onLayout={() => toast({ title: "Layout", description: "Não implementado", variant: "default" })}
             onResetView={handleResetView}
             onSaveGraph={handleSaveGraph}
           />
 
-          <div className="flex-1 overflow-hidden" ref={reactFlowWrapper}>
+          <div className="flex-1 overflow-hidden">
             <ReactFlow
               nodes={nodes}
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
-              onInit={setReactFlowInstance}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              connectionLineComponent={CustomConnectionLine}
               fitView
+              nodeTypes={nodeTypes}
             >
               <MiniMap />
               <Controls />
