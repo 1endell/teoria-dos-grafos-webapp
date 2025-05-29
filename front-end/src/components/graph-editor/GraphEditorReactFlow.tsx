@@ -3,19 +3,18 @@ import ReactFlow, {
   Background,
   Controls,
   addEdge,
-  MiniMap,
   useNodesState,
   useEdgesState,
   Connection,
   Edge,
   Node,
-  ReactFlowProvider,
   useReactFlow
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import CustomNode from './CustomNode';
-import CustomEdge from './CustomEdge';
-import CustomConnectionLine from './CustomConnectionLine';
+
+import CustomNode from '@/components/graph-editor/CustomNode';
+import CustomEdge from '@/components/graph-editor/CustomEdge';
+import CustomConnectionLine from '@/components/graph-editor/CustomConnectionLine';
 
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
@@ -23,7 +22,6 @@ const initialEdges: Edge[] = [];
 const GraphEditorReactFlow: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nodeCounter, setNodeCounter] = useState(0);
 
   const onConnect = useCallback(
