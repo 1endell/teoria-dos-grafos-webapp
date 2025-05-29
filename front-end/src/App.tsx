@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Background,
   ReactFlow,
+  addEdge,
   useNodesState,
   useEdgesState,
-  addEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -15,78 +15,49 @@ import CustomConnectionLine from './components/graph-editor/CustomConnectionLine
 const initialNodes = [
   { id: '1', type: 'custom', position: { x: 100, y: 100 } },
   { id: '2', type: 'custom', position: { x: 300, y: 200 } },
+  { id: '3', type: 'custom', position: { x: 200, y: 400 } },
+  { id: '4', type: 'custom', position: { x: 500, y: 300 } },
 ];
+
 const initialEdges = [];
 
 const nodeTypes = { custom: CustomNode };
 const edgeTypes = { floating: CustomFloatingEdge };
+
 const connectionLineStyle = { stroke: '#000', strokeWidth: 2 };
 
 const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mode, setMode] = useState('move'); // 'move', 'addNode', 'addEdge'
-  const [selectedSource, setSelectedSource] = useState(null);
 
-  const onPaneClick = useCallback(
-    (event) => {
-      if (mode === 'addNode') {
-        const newNode = {
-          id: `${+new Date()}`,
-          type: 'custom',
-          position: { x: event.clientX - 100, y: event.clientY - 40 },
-          data: { mode },
-        };
-        setNodes((nds) => [...nds, newNode]);
-      }
-      setSelectedSource(null); // Reset ao clicar fora
-    },
-    [mode, setNodes]
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds)),
+    [setEdges]
   );
-
-  const onNodeClick = useCallback(
-    (event, node) => {
-      if (mode === 'addEdge') {
-        if (!selectedSource) {
-          setSelectedSource(node.id); // Definir como origem
-        } else if (selectedSource !== node.id) {
-          setEdges((eds) =>
-            addEdge({ source: selectedSource, target: node.id, type: 'floating' }, eds)
-          );
-          setSelectedSource(null); // Reset após conexão
-        }
-      }
-    },
-    [mode, selectedSource, setEdges]
-  );
-
-  const displayedNodes = nodes.map((node) => ({
-    ...node,
-    data: { ...node.data, mode },
-  }));
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+      {/* Área principal do ReactFlow */}
       <div style={{ flexGrow: 1, position: 'relative' }}>
         <ReactFlow
-          nodes={displayedNodes}
+          nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
+          onConnect={onConnect}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           connectionLineComponent={CustomConnectionLine}
           connectionLineStyle={connectionLineStyle}
+          connectionMode="loose"
           style={{ width: '100%', height: '100%' }}
-          connectionMode="invalid" // Desativa conexões automáticas
-          onPaneClick={onPaneClick}
         >
           <Background />
         </ReactFlow>
 
+        {/* Botão flutuante para abrir/fechar a barra lateral */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
@@ -102,6 +73,7 @@ const App = () => {
         </button>
       </div>
 
+      {/* Barra lateral */}
       {sidebarOpen && (
         <div
           style={{
@@ -113,16 +85,9 @@ const App = () => {
           }}
         >
           <h3>Ferramentas</h3>
-          <button onClick={() => setMode('move')} style={{ display: 'block', marginBottom: 10 }}>
-            Mover Vértice
-          </button>
-          <button onClick={() => setMode('addNode')} style={{ display: 'block', marginBottom: 10 }}>
-            Adicionar Vértice
-          </button>
-          <button onClick={() => setMode('addEdge')} style={{ display: 'block' }}>
-            Adicionar Aresta
-          </button>
-          <p style={{ marginTop: 10 }}>Modo atual: {mode}</p>
+          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
+          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
+          <button style={{ display: 'block' }}>Remover Seleção</button>
         </div>
       )}
     </div>
