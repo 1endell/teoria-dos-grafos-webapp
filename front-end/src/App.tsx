@@ -5,7 +5,7 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
-  ReactFlowProvider // Aqui, corrigido para @xyflow/react
+  ReactFlowProvider, // <- Garante o provider de zustand
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -39,6 +39,7 @@ const App = () => {
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+      {/* Envolve ReactFlow com ReactFlowProvider */}
       <ReactFlowProvider>
         <div style={{ flexGrow: 1, position: 'relative' }}>
           <ReactFlow
@@ -58,6 +59,7 @@ const App = () => {
             <Background />
           </ReactFlow>
 
+          {/* Botão flutuante para abrir/fechar a barra lateral */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             style={{
@@ -73,6 +75,7 @@ const App = () => {
           </button>
         </div>
       </ReactFlowProvider>
+
       {/* Barra lateral */}
       {sidebarOpen && (
         <div
@@ -91,6 +94,7 @@ const App = () => {
         </div>
       )}
     </div>
-  };
+  );
+};
 
 export default App;
