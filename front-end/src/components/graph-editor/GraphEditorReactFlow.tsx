@@ -9,7 +9,7 @@ import ReactFlow, {
   Edge,
   useReactFlow,
   ReactFlowProvider // Importar o Provider
-} from 'reactflow';
+} from '@xyflow/react';
 import 'reactflow/dist/style.css';
 
 import CustomNode from './CustomNode';

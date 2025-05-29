@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EdgeProps, getStraightPath } from 'reactflow';
+import { EdgeProps, getStraightPath } from '@xyflow/react';
 
 const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, markerEnd }: EdgeProps) => {
   const [edgePath] = getStraightPath({ sourceX, sourceY, targetX, targetY });

@@ -8,7 +8,7 @@ import GraphEditorToolbarReactFlow from './graph-editor/GraphEditorToolbarReactF
 import ReactFlow, {
   MiniMap, Controls, Background,
   addEdge, useNodesState, useEdgesState, Connection, Edge, Node
-} from 'reactflow';
+} from '@xyflow/react';
 import CustomEdge from './graph-editor/CustomEdge';
 import CustomNode from './graph-editor/CustomNode';
 import 'reactflow/dist/style.css';
