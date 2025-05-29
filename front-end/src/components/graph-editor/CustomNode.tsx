@@ -16,9 +16,12 @@ export default function CustomNode({ id }) {
         alignItems: 'center',
         fontWeight: 'bold',
         position: 'relative',
+        cursor: 'move', // Cursor de arrastar por padrão
       }}
     >
       {id}
+
+      {/* Handle centralizado e invisível para permitir conexão */}
       <Handle
         type="source"
         position="top"
@@ -31,9 +34,10 @@ export default function CustomNode({ id }) {
           transform: 'translate(-50%, -50%)',
           borderRadius: '50%',
           opacity: 0,
-          cursor: 'crosshair',
+          cursor: 'crosshair', // Quando passando sobre o handle
         }}
       />
+
       <Handle
         type="target"
         position="top"

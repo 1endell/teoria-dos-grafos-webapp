@@ -5,6 +5,7 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
+  Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -30,15 +31,28 @@ const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [allowConnect, setAllowConnect] = useState(false);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds)),
     [setEdges]
   );
 
+  // Detectar se CTRL está pressionado ao iniciar conexão
+  const onConnectStart = (event) => {
+    if (event.ctrlKey) {
+      setAllowConnect(true);
+    } else {
+      setAllowConnect(false);
+    }
+  };
+
+  const onConnectEnd = () => {
+    setAllowConnect(false);
+  };
+
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
-      {/* Área principal do ReactFlow */}
       <div style={{ flexGrow: 1, position: 'relative' }}>
         <ReactFlow
           nodes={nodes}
@@ -46,18 +60,19 @@ const App = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
+          connectionMode={allowConnect ? 'loose' : 'invalid'} // Só permite conexão se CTRL estiver pressionado
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           connectionLineComponent={CustomConnectionLine}
           connectionLineStyle={connectionLineStyle}
-          connectionMode="loose"
           style={{ width: '100%', height: '100%' }}
         >
           <Background />
         </ReactFlow>
 
-        {/* Botão flutuante para abrir/fechar a barra lateral */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
@@ -73,7 +88,6 @@ const App = () => {
         </button>
       </div>
 
-      {/* Barra lateral */}
       {sidebarOpen && (
         <div
           style={{
