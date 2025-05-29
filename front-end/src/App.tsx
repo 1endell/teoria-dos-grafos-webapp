@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Background,
   ReactFlow,
@@ -15,10 +15,7 @@ import CustomConnectionLine from './components/graph-editor/CustomConnectionLine
 const initialNodes = [
   { id: '1', type: 'custom', position: { x: 100, y: 100 } },
   { id: '2', type: 'custom', position: { x: 300, y: 200 } },
-  { id: '3', type: 'custom', position: { x: 200, y: 400 } },
-  { id: '4', type: 'custom', position: { x: 500, y: 300 } },
 ];
-
 const initialEdges = [];
 
 const nodeTypes = { custom: CustomNode };
@@ -30,45 +27,30 @@ const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
-  const [connectionStart, setConnectionStart] = useState(null);
+  const [mode, setMode] = useState('move'); // 'move', 'addNode', 'addEdge'
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Control') setIsCtrlPressed(true);
-    };
-    const handleKeyUp = (e) => {
-      if (e.key === 'Control') setIsCtrlPressed(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
+  const onConnect = useCallback(
+    (params) => {
+      if (mode === 'addEdge') {
+        setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds));
+      }
+    },
+    [setEdges, mode]
+  );
 
-  const onNodeClick = (event, node) => {
-    if (isCtrlPressed) {
-      // Inicia a conexão ao clicar com CTRL
-      setConnectionStart(node.id);
-    }
-  };
-
-  const onPaneClick = (event) => {
-    // Cancela a conexão se clicar fora
-    if (connectionStart) setConnectionStart(null);
-  };
-
-  const onNodeMouseUp = (event, node) => {
-    if (connectionStart && connectionStart !== node.id) {
-      // Finaliza a conexão se soltar o mouse em outro nó
-      setEdges((eds) =>
-        addEdge({ source: connectionStart, target: node.id, type: 'floating' }, eds)
-      );
-      setConnectionStart(null);
-    }
-  };
+  const onPaneClick = useCallback(
+    (event) => {
+      if (mode === 'addNode') {
+        const newNode = {
+          id: `${+new Date()}`,
+          type: 'custom',
+          position: { x: event.clientX - 100, y: event.clientY - 40 },
+        };
+        setNodes((nds) => [...nds, newNode]);
+      }
+    },
+    [mode, setNodes]
+  );
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
@@ -78,15 +60,15 @@ const App = () => {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           connectionLineComponent={CustomConnectionLine}
           connectionLineStyle={connectionLineStyle}
-          onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
-          onNodeMouseUp={onNodeMouseUp}
           style={{ width: '100%', height: '100%' }}
+          connectionMode={mode === 'addEdge' ? 'loose' : 'invalid'}
+          onPaneClick={onPaneClick}
         >
           <Background />
         </ReactFlow>
@@ -117,9 +99,16 @@ const App = () => {
           }}
         >
           <h3>Ferramentas</h3>
-          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
-          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
-          <button style={{ display: 'block' }}>Remover Seleção</button>
+          <button onClick={() => setMode('move')} style={{ display: 'block', marginBottom: 10 }}>
+            Mover Vértice
+          </button>
+          <button onClick={() => setMode('addNode')} style={{ display: 'block', marginBottom: 10 }}>
+            Adicionar Vértice
+          </button>
+          <button onClick={() => setMode('addEdge')} style={{ display: 'block' }}>
+            Adicionar Aresta
+          </button>
+          <p style={{ marginTop: 10 }}>Modo atual: {mode}</p>
         </div>
       )}
     </div>
