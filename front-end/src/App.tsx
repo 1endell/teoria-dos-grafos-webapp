@@ -2,9 +2,9 @@ import React, { useState, useCallback } from 'react';
 import {
   Background,
   ReactFlow,
-  addEdge,
   useNodesState,
   useEdgesState,
+  addEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -20,7 +20,6 @@ const initialEdges = [];
 
 const nodeTypes = { custom: CustomNode };
 const edgeTypes = { floating: CustomFloatingEdge };
-
 const connectionLineStyle = { stroke: '#000', strokeWidth: 2 };
 
 const App = () => {
@@ -28,15 +27,7 @@ const App = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mode, setMode] = useState('move'); // 'move', 'addNode', 'addEdge'
-
-  const onConnect = useCallback(
-    (params) => {
-      if (mode === 'addEdge') {
-        setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds));
-      }
-    },
-    [setEdges, mode]
-  );
+  const [selectedSource, setSelectedSource] = useState(null);
 
   const onPaneClick = useCallback(
     (event) => {
@@ -45,36 +36,52 @@ const App = () => {
           id: `${+new Date()}`,
           type: 'custom',
           position: { x: event.clientX - 100, y: event.clientY - 40 },
-          data: { mode }, // Inclui o modo no novo nó
+          data: { mode },
         };
         setNodes((nds) => [...nds, newNode]);
       }
+      setSelectedSource(null); // Reset ao clicar fora
     },
     [mode, setNodes]
   );
 
-  // Atualizar todos os nodes com o modo atual
+  const onNodeClick = useCallback(
+    (event, node) => {
+      if (mode === 'addEdge') {
+        if (!selectedSource) {
+          setSelectedSource(node.id); // Definir como origem
+        } else if (selectedSource !== node.id) {
+          setEdges((eds) =>
+            addEdge({ source: selectedSource, target: node.id, type: 'floating' }, eds)
+          );
+          setSelectedSource(null); // Reset após conexão
+        }
+      }
+    },
+    [mode, selectedSource, setEdges]
+  );
+
   const displayedNodes = nodes.map((node) => ({
     ...node,
-    data: { ...node.data, mode }, // passa o modo atual para o CustomNode
+    data: { ...node.data, mode },
   }));
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
       <div style={{ flexGrow: 1, position: 'relative' }}>
         <ReactFlow
-          nodes={displayedNodes} // Passa nodes atualizados
+          nodes={displayedNodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
+          onNodeClick={onNodeClick}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           connectionLineComponent={CustomConnectionLine}
           connectionLineStyle={connectionLineStyle}
           style={{ width: '100%', height: '100%' }}
-          connectionMode={mode === 'addEdge' ? 'loose' : 'invalid'}
+          connectionMode="invalid" // Desativa conexões automáticas
           onPaneClick={onPaneClick}
         >
           <Background />
