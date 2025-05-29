@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Background,
   ReactFlow,
@@ -31,6 +31,7 @@ const App = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isCtrlPressed, setIsCtrlPressed] = useState(false);
+  const [connectionStart, setConnectionStart] = useState(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -47,19 +48,25 @@ const App = () => {
     };
   }, []);
 
-  const onConnect = useCallback(
-    (params) => {
-      if (isCtrlPressed) {
-        setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds));
-      }
-    },
-    [setEdges, isCtrlPressed]
-  );
+  const onNodeClick = (event, node) => {
+    if (isCtrlPressed) {
+      // Inicia a conexão ao clicar com CTRL
+      setConnectionStart(node.id);
+    }
+  };
 
-  // Evitar iniciar conexão sem CTRL
-  const onConnectStart = (event) => {
-    if (!event.ctrlKey) {
-      event.preventDefault(); // Bloqueia o comportamento de conexão
+  const onPaneClick = (event) => {
+    // Cancela a conexão se clicar fora
+    if (connectionStart) setConnectionStart(null);
+  };
+
+  const onNodeMouseUp = (event, node) => {
+    if (connectionStart && connectionStart !== node.id) {
+      // Finaliza a conexão se soltar o mouse em outro nó
+      setEdges((eds) =>
+        addEdge({ source: connectionStart, target: node.id, type: 'floating' }, eds)
+      );
+      setConnectionStart(null);
     }
   };
 
@@ -71,13 +78,14 @@ const App = () => {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onConnectStart={onConnectStart}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           connectionLineComponent={CustomConnectionLine}
           connectionLineStyle={connectionLineStyle}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
+          onNodeMouseUp={onNodeMouseUp}
           style={{ width: '100%', height: '100%' }}
         >
           <Background />
