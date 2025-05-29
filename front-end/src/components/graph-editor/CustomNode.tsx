@@ -1,6 +1,4 @@
-
 import React from 'react';
-import { Handle, Position } from 'reactflow';
 
 const CustomNode = ({ data, selected }) => {
   const { label, color = '#4f46e5', size = 60 } = data;
@@ -25,14 +23,6 @@ const CustomNode = ({ data, selected }) => {
       }}
     >
       {label}
-      <Handle type="source" position={Position.Top} style={{ opacity: 0 }} />
-      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
-      <Handle type="source" position={Position.Left} style={{ opacity: 0 }} />
-      <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Bottom} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
-      <Handle type="target" position={Position.Right} style={{ opacity: 0 }} />
     </div>
   );
 };

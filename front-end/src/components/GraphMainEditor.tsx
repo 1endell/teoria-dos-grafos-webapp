@@ -127,15 +127,19 @@ const GraphMainEditor: React.FC = () => {
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
-              onConnect={onConnect} // Garantir o onConnect
-              onInit={setReactFlowInstance}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
+              onConnect={onConnect}
               fitView
+              nodeTypes={{ custom: CustomNode }}
+              edgeTypes={{ custom: CustomEdge }}
+              defaultEdgeOptions={{ type: 'custom' }}
+              connectionLineComponent={CustomConnectionLine}
+              connectionLineStyle={{ stroke: '#000', strokeWidth: 2 }}
+              connectionLineType="straight"
+              panOnDrag
+              zoomOnScroll
+              nodeDraggable
             >
-              <MiniMap />
-              <Controls />
-              <Background />
+              <Background gap={16} size={1} color="#ccc" variant="dots" />
             </ReactFlow>
           </div>
         </div>
