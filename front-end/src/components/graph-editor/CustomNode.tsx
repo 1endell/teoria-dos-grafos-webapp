@@ -21,11 +21,12 @@ export default function CustomNode({ id, data }) {
       }}
     >
       {id}
+
       {showHandles && (
         <>
           <Handle
             type="source"
-            position="top"
+            position="right"
             style={{
               width: size,
               height: size,
@@ -37,10 +38,11 @@ export default function CustomNode({ id, data }) {
               opacity: 0,
               cursor: 'crosshair',
             }}
+            isConnectable={true} // Permitir conexão
           />
           <Handle
             type="target"
-            position="top"
+            position="left"
             style={{
               width: size,
               height: size,
@@ -50,7 +52,9 @@ export default function CustomNode({ id, data }) {
               transform: 'translate(-50%, -50%)',
               borderRadius: '50%',
               opacity: 0,
+              cursor: 'crosshair',
             }}
+            isConnectable={true} // Permitir conexão
           />
         </>
       )}
