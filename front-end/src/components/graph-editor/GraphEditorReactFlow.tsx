@@ -1,4 +1,3 @@
-import CustomConnectionLine from '@/components/graph-editor/CustomConnectionLine';
 import React, { useCallback, useState } from 'react';
 import ReactFlow, {
   Background,
@@ -13,9 +12,9 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import CustomNode from '@/components/graph-editor/CustomNode';
-import CustomEdge from '@/components/graph-editor/CustomEdge';
-import CustomConnectionLine from '@/components/graph-editor/CustomConnectionLine';
+import CustomNode from './CustomNode';
+import CustomEdge from './CustomEdge';
+import CustomConnectionLine from './CustomConnectionLine';
 
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
