@@ -13,10 +13,10 @@ import CustomFloatingEdge from './components/graph-editor/CustomFloatingEdge';
 import CustomConnectionLine from './components/graph-editor/CustomConnectionLine';
 
 const initialNodes = [
-  { id: '1', type: 'custom', position: { x: 0, y: 0 } },
-  { id: '2', type: 'custom', position: { x: 250, y: 320 } },
-  { id: '3', type: 'custom', position: { x: 40, y: 300 } },
-  { id: '4', type: 'custom', position: { x: 300, y: 0 } },
+  { id: '1', type: 'custom', position: { x: 100, y: 100 } },
+  { id: '2', type: 'custom', position: { x: 300, y: 200 } },
+  { id: '3', type: 'custom', position: { x: 200, y: 400 } },
+  { id: '4', type: 'custom', position: { x: 500, y: 300 } },
 ];
 
 const initialEdges = [];
@@ -26,7 +26,7 @@ const edgeTypes = { floating: CustomFloatingEdge };
 
 const connectionLineStyle = { stroke: '#000', strokeWidth: 2 };
 
-const EasyConnectExample = () => {
+const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -36,21 +36,24 @@ const EasyConnectExample = () => {
   );
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      fitView
-      nodeTypes={nodeTypes}
-      edgeTypes={edgeTypes}
-      connectionLineComponent={CustomConnectionLine}
-      connectionLineStyle={connectionLineStyle}
-    >
-      <Background />
-    </ReactFlow>
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        fitView
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        connectionLineComponent={CustomConnectionLine}
+        connectionLineStyle={connectionLineStyle}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <Background />
+      </ReactFlow>
+    </div>
   );
 };
 
-export default EasyConnectExample;
+export default App;
