@@ -1,6 +1,5 @@
 import { Handle } from '@xyflow/react';
 
-export default function CustomNode({ id }) {
   const size = 60 * 0.4;
 
   return (
@@ -15,7 +14,7 @@ export default function CustomNode({ id }) {
         justifyContent: 'center',
         alignItems: 'center',
         fontWeight: 'bold',
-        cursor: 'move', // Cursor para indicar arrastar
+        cursor: 'move',
       }}
     >
       {id}

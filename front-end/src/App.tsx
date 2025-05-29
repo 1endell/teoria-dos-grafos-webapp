@@ -1,11 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   Background,
   ReactFlow,
   addEdge,
   useNodesState,
   useEdgesState,
-  Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -31,23 +30,31 @@ const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [allowConnect, setAllowConnect] = useState(false);
+  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Control') setIsCtrlPressed(true);
+    };
+    const handleKeyUp = (e) => {
+      if (e.key === 'Control') setIsCtrlPressed(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds)),
-    [setEdges]
+    (params) => {
+      if (isCtrlPressed) {
+        setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds));
+      }
+    },
+    [setEdges, isCtrlPressed]
   );
-
-  // Detectar se CTRL está pressionado ao iniciar conexão
-  const onConnectStart = (event) => {
-    if (event.ctrlKey) {
-      setAllowConnect(true);
-    }
-  };
-
-  const onConnectEnd = () => {
-    setAllowConnect(false);
-  };
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
@@ -58,9 +65,6 @@ const App = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          connectionMode={allowConnect ? 'loose' : 'invalid'}
-          onConnectStart={onConnectStart}
-          onConnectEnd={onConnectEnd}
           fitView
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
@@ -70,6 +74,7 @@ const App = () => {
         >
           <Background />
         </ReactFlow>
+
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
