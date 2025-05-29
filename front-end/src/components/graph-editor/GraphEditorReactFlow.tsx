@@ -8,6 +8,7 @@ import ReactFlow, {
   Node,
   Edge,
   useReactFlow,
+  ReactFlowProvider // Importar o Provider
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -22,8 +23,6 @@ const GraphEditorReactFlow: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [nodeCounter, setNodeCounter] = useState(0);
-  const [mode, setMode] = useState<'move' | 'addEdge'>('move');
-  const [selectedSource, setSelectedSource] = useState<string | null>(null);
 
   const { getViewport } = useReactFlow();
 
@@ -53,34 +52,22 @@ const GraphEditorReactFlow: React.FC = () => {
     setNodeCounter((prev) => prev + 1);
   };
 
-  const onNodeClick = useCallback((_, node) => {
-    if (mode === 'addEdge') {
-      if (!selectedSource) {
-        setSelectedSource(node.id); // Primeiro clique define origem
-      } else if (selectedSource !== node.id) {
-        // Segundo clique cria a aresta
-        setEdges((eds) =>
-          addEdge({ source: selectedSource, target: node.id, type: 'custom' }, eds)
-        );
-        setSelectedSource(null);
-      }
-    }
-  }, [mode, selectedSource, setEdges]);
+  const onConnect = useCallback(
+    (params: Edge) => setEdges((eds) => addEdge({ ...params, type: 'custom' }, eds)),
+    [setEdges]
+  );
 
   return (
-    <>
+    <ReactFlowProvider>
       <div style={{ marginBottom: 10 }}>
-        <button onClick={handleAddNode} style={{ marginRight: 10 }}>Adicionar Nó</button>
-        <button onClick={() => setMode('move')} style={{ marginRight: 10 }}>Modo Mover</button>
-        <button onClick={() => setMode('addEdge')}>Modo Adicionar Aresta</button>
-        <span style={{ marginLeft: 10 }}>Modo Atual: {mode}</span>
+        <button onClick={handleAddNode}>Adicionar Nó</button>
       </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={() => {}} // Desativar onConnect padrão
+        onConnect={onConnect}
         fitView
         nodeTypes={{ custom: CustomNode }}
         edgeTypes={{ custom: CustomEdge }}
@@ -90,13 +77,11 @@ const GraphEditorReactFlow: React.FC = () => {
         connectionLineType="straight"
         panOnDrag
         zoomOnScroll
-        nodeDraggable={mode === 'move'} // Só permite mover no modo "move"
-        onNodeClick={onNodeClick} // Clique para criar aresta
       >
         <Background gap={16} size={1} color="#ccc" variant="dots" />
         <Controls />
       </ReactFlow>
-    </>
+    </ReactFlowProvider>
   );
 };
 
