@@ -22,7 +22,7 @@ const initialNodes = [
 const initialEdges = [];
 
 const nodeTypes = { custom: CustomNode };
-const edgeTypes = { floating: FloatingEdge };
+const edgeTypes = { floating: CustomFloatingEdge };
 
 const connectionLineStyle = { stroke: '#000', strokeWidth: 2 };
 
