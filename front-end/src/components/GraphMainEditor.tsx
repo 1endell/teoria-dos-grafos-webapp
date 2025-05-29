@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import GraphPlatformSidebar from './graph-editor/GraphPlatformSidebar';
 import { Input } from '@/components/ui/input';
@@ -19,11 +19,8 @@ const GraphMainEditor: React.FC = () => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [physicsEnabled, setPhysicsEnabled] = useState(true);
-  const [repulsionForce, setRepulsionForce] = useState(10000);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
-  const selectedNodesRef = useRef<string[]>([]);
 
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
   const getNextLabel = () => {
@@ -43,18 +40,31 @@ const GraphMainEditor: React.FC = () => {
     const newNode: Node = {
       id,
       position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: { label, color: '#ffcc00', icon: '⭐', size: 60 },
+      data: { label },
       type: 'custom',
     };
     setNodes((nds) => nds.concat(newNode));
   };
 
   const handleAddEdge = () => {
-    toast({ title: "Modo Aresta", description: "Conecte dois nós para criar uma aresta.", variant: "default" });
+    toast({
+      title: "Modo Aresta",
+      description: "Conecte dois nós para criar uma aresta.",
+      variant: "default",
+    });
   };
 
+  const onConnect = useCallback(
+    (params: Edge | Connection) => setEdges((eds) => addEdge({ ...params, type: 'custom' }, eds)),
+    [setEdges]
+  );
+
   const handleLayout = () => {
-    toast({ title: "Layout Automático", description: "Layout ainda não implementado.", variant: "default" });
+    toast({
+      title: "Layout Automático",
+      description: "Layout automático ainda não implementado.",
+      variant: "default",
+    });
   };
 
   const handleResetView = () => {
@@ -82,59 +92,6 @@ const GraphMainEditor: React.FC = () => {
     }
   };
 
-  // Física de repulsão + Snap to grid + Seleção múltipla
-  useEffect(() => {
-    let animationFrame: number;
-    const applyPhysics = () => {
-      if (!physicsEnabled) return;
-      const updatedNodes = [...nodes];
-      for (let i = 0; i < updatedNodes.length; i++) {
-        for (let j = i + 1; j < updatedNodes.length; j++) {
-          const node1 = updatedNodes[i];
-          const node2 = updatedNodes[j];
-          const dx = node2.position.x - node1.position.x;
-          const dy = node2.position.y - node1.position.y;
-          const distance = Math.sqrt(dx * dx + dy * dy) + 0.1;
-          const force = repulsionForce / (distance * distance);
-          const fx = (dx / distance) * force;
-          const fy = (dy / distance) * force;
-          node1.position.x -= fx * 0.1;
-          node1.position.y -= fy * 0.1;
-          node2.position.x += fx * 0.1;
-          node2.position.y += fy * 0.1;
-        }
-      }
-      setNodes(updatedNodes);
-      animationFrame = requestAnimationFrame(applyPhysics);
-    };
-    if (physicsEnabled) animationFrame = requestAnimationFrame(applyPhysics);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [nodes, physicsEnabled, repulsionForce]);
-
-  // Teclas para Snap e Movimentação
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const step = 10;
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        setNodes((nds) =>
-          nds.map((node) =>
-            selectedNodesRef.current.includes(node.id)
-              ? {
-                  ...node,
-                  position: {
-                    x: node.position.x + (e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0),
-                    y: node.position.y + (e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0),
-                  },
-                }
-              : node
-          )
-        );
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   const nodeTypes = { custom: CustomNode };
   const edgeTypes = { custom: CustomEdge };
 
@@ -148,7 +105,7 @@ const GraphMainEditor: React.FC = () => {
               {isEditingTitle ? (
                 <Input defaultValue={graphName} className="text-xl font-semibold" onKeyDown={handleTitleSave} onBlur={() => setIsEditingTitle(false)} autoFocus />
               ) : (
-                <h1 className="text-xl font-semibold cursor-pointer hover:text-blue-600" onClick={handleTitleEdit}>
+                <h1 className="text-xl font-semibold cursor-pointer hover:text-blue-600" onClick={handleTitleEdit} title="Clique para editar o nome">
                   {graphName}
                 </h1>
               )}
@@ -163,21 +120,18 @@ const GraphMainEditor: React.FC = () => {
             onResetView={handleResetView}
             onSaveGraph={handleSaveGraph}
           />
+
           <div className="flex-1 overflow-hidden" ref={reactFlowWrapper}>
             <ReactFlow
               nodes={nodes}
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
+              onConnect={onConnect} // Garantir o onConnect
               onInit={setReactFlowInstance}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
               fitView
-              multiSelectionKeyCode="Shift" // Multi-seleção com Shift
-              onSelectionChange={(elements) =>
-                (selectedNodesRef.current = elements?.nodes?.map((n) => n.id) || [])
-              }
             >
               <MiniMap />
               <Controls />
