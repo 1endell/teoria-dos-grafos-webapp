@@ -24,37 +24,35 @@ export default function CustomNode({ id, data }) {
 
       {showHandles && (
         <>
+          {/* Handle para iniciar a conexão */}
           <Handle
             type="source"
             position="right"
+            isConnectable={true}
             style={{
-              width: size,
-              height: size,
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
+              width: 10,
+              height: 10,
+              background: 'red', // Visível para teste
               borderRadius: '50%',
-              opacity: 0,
-              cursor: 'crosshair',
+              right: -5, // Posição relativa ao nó
+              top: '50%',
+              transform: 'translateY(-50%)',
             }}
-            isConnectable={true} // Permitir conexão
           />
+          {/* Handle para finalizar a conexão */}
           <Handle
             type="target"
             position="left"
+            isConnectable={true}
             style={{
-              width: size,
-              height: size,
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
+              width: 10,
+              height: 10,
+              background: 'blue', // Visível para teste
               borderRadius: '50%',
-              opacity: 0,
-              cursor: 'crosshair',
+              left: -5, // Posição relativa ao nó
+              top: '50%',
+              transform: 'translateY(-50%)',
             }}
-            isConnectable={true} // Permitir conexão
           />
         </>
       )}
