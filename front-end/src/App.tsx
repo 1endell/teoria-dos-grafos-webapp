@@ -5,7 +5,7 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
-  ReactFlowProvider, // Import correto do zustand provider
+  ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -16,8 +16,6 @@ import CustomConnectionLine from './components/graph-editor/CustomConnectionLine
 const initialNodes = [
   { id: '1', type: 'custom', position: { x: 100, y: 100 } },
   { id: '2', type: 'custom', position: { x: 300, y: 200 } },
-  { id: '3', type: 'custom', position: { x: 200, y: 400 } },
-  { id: '4', type: 'custom', position: { x: 500, y: 300 } },
 ];
 
 const initialEdges = [];
@@ -58,7 +56,6 @@ const App = () => {
             <Background />
           </ReactFlow>
 
-          {/* Botão flutuante para abrir/fechar a barra lateral */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             style={{
@@ -74,7 +71,6 @@ const App = () => {
           </button>
         </div>
 
-        {/* Barra lateral */}
         {sidebarOpen && (
           <div
             style={{
