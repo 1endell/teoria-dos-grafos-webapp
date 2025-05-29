@@ -45,6 +45,7 @@ const App = () => {
           id: `${+new Date()}`,
           type: 'custom',
           position: { x: event.clientX - 100, y: event.clientY - 40 },
+          data: { mode }, // Inclui o modo no novo nó
         };
         setNodes((nds) => [...nds, newNode]);
       }
@@ -52,11 +53,17 @@ const App = () => {
     [mode, setNodes]
   );
 
+  // Atualizar todos os nodes com o modo atual
+  const displayedNodes = nodes.map((node) => ({
+    ...node,
+    data: { ...node.data, mode }, // passa o modo atual para o CustomNode
+  }));
+
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
       <div style={{ flexGrow: 1, position: 'relative' }}>
         <ReactFlow
-          nodes={displayedNodes} // Passar nodes atualizados
+          nodes={displayedNodes} // Passa nodes atualizados
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -69,7 +76,9 @@ const App = () => {
           style={{ width: '100%', height: '100%' }}
           connectionMode={mode === 'addEdge' ? 'loose' : 'invalid'}
           onPaneClick={onPaneClick}
-        />
+        >
+          <Background />
+        </ReactFlow>
 
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
