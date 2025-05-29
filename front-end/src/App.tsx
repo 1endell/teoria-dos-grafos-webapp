@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Background,
   ReactFlow,
@@ -29,6 +29,7 @@ const connectionLineStyle = { stroke: '#000', strokeWidth: 2 };
 const App = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds)),
@@ -36,23 +37,59 @@ const App = () => {
   );
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        connectionLineComponent={CustomConnectionLine}
-        connectionLineStyle={connectionLineStyle}
-        connectionMode="loose"  // Permite conexões em toda a área do vértice
-        style={{ width: '100%', height: '100%' }}
-      >
-        <Background />
-      </ReactFlow>
+    <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+      {/* Área principal do ReactFlow */}
+      <div style={{ flexGrow: 1, position: 'relative' }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          fitView
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          connectionLineComponent={CustomConnectionLine}
+          connectionLineStyle={connectionLineStyle}
+          connectionMode="loose"
+          style={{ width: '100%', height: '100%' }}
+        >
+          <Background />
+        </ReactFlow>
+
+        {/* Botão flutuante para abrir/fechar a barra lateral */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: sidebarOpen ? 210 : 10,
+            zIndex: 10,
+            padding: '5px 10px',
+            cursor: 'pointer',
+          }}
+        >
+          {sidebarOpen ? 'Fechar' : 'Abrir'}
+        </button>
+      </div>
+
+      {/* Barra lateral */}
+      {sidebarOpen && (
+        <div
+          style={{
+            width: 200,
+            background: '#f5f5f5',
+            borderLeft: '1px solid #ccc',
+            padding: 10,
+            boxSizing: 'border-box',
+          }}
+        >
+          <h3>Ferramentas</h3>
+          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
+          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
+          <button style={{ display: 'block' }}>Remover Seleção</button>
+        </div>
+      )}
     </div>
   );
 };

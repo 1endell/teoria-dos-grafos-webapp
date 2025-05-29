@@ -1,7 +1,7 @@
 import { Handle } from '@xyflow/react';
 
 export default function CustomNode({ id }) {
-  const size = 60;
+  const size = 60 * 0.4; // 40% do tamanho original
 
   return (
     <div
@@ -19,8 +19,6 @@ export default function CustomNode({ id }) {
       }}
     >
       {id}
-
-      {/* Handle centralizado no Node */}
       <Handle
         type="source"
         position="top"
@@ -36,7 +34,6 @@ export default function CustomNode({ id }) {
           cursor: 'crosshair',
         }}
       />
-
       <Handle
         type="target"
         position="top"
