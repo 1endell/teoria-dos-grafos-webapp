@@ -38,9 +38,8 @@ const App = () => {
   );
 
   return (
-    <ReactFlowProvider>
-      <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
-        {/* Área principal do ReactFlow */}
+    <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+      <ReactFlowProvider>
         <div style={{ flexGrow: 1, position: 'relative' }}>
           <ReactFlow
             nodes={nodes}
@@ -59,7 +58,6 @@ const App = () => {
             <Background />
           </ReactFlow>
 
-          {/* Botão flutuante para abrir/fechar a barra lateral */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             style={{
@@ -74,27 +72,25 @@ const App = () => {
             {sidebarOpen ? 'Fechar' : 'Abrir'}
           </button>
         </div>
-
-        {/* Barra lateral */}
-        {sidebarOpen && (
-          <div
-            style={{
-              width: 200,
-              background: '#f5f5f5',
-              borderLeft: '1px solid #ccc',
-              padding: 10,
-              boxSizing: 'border-box',
-            }}
-          >
-            <h3>Ferramentas</h3>
-            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
-            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
-            <button style={{ display: 'block' }}>Remover Seleção</button>
-          </div>
-        )}
-      </div>
-    </ReactFlowProvider>
-  );
-};
+      </ReactFlowProvider>
+      {/* Barra lateral */}
+      {sidebarOpen && (
+        <div
+          style={{
+            width: 200,
+            background: '#f5f5f5',
+            borderLeft: '1px solid #ccc',
+            padding: 10,
+            boxSizing: 'border-box',
+          }}
+        >
+          <h3>Ferramentas</h3>
+          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
+          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
+          <button style={{ display: 'block' }}>Remover Seleção</button>
+        </div>
+      )}
+    </div>
+  };
 
 export default App;
