@@ -5,9 +5,9 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
+  ReactFlowProvider // Aqui, corrigido para @xyflow/react
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ReactFlowProvider } from 'reactflow';
 
 import CustomNode from './components/graph-editor/CustomNode';
 import CustomFloatingEdge from './components/graph-editor/CustomFloatingEdge';
@@ -38,60 +38,62 @@ const App = () => {
   );
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
-      {/* Área principal do ReactFlow */}
-      <div style={{ flexGrow: 1, position: 'relative' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          connectionLineComponent={CustomConnectionLine}
-          connectionLineStyle={connectionLineStyle}
-          connectionMode="loose"
-          style={{ width: '100%', height: '100%' }}
-        >
-          <Background />
-        </ReactFlow>
+    <ReactFlowProvider>
+      <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+        {/* Área principal do ReactFlow */}
+        <div style={{ flexGrow: 1, position: 'relative' }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            fitView
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            connectionLineComponent={CustomConnectionLine}
+            connectionLineStyle={connectionLineStyle}
+            connectionMode="loose"
+            style={{ width: '100%', height: '100%' }}
+          >
+            <Background />
+          </ReactFlow>
 
-        {/* Botão flutuante para abrir/fechar a barra lateral */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            position: 'absolute',
-            top: 10,
-            right: sidebarOpen ? 210 : 10,
-            zIndex: 10,
-            padding: '5px 10px',
-            cursor: 'pointer',
-          }}
-        >
-          {sidebarOpen ? 'Fechar' : 'Abrir'}
-        </button>
-      </div>
-
-      {/* Barra lateral */}
-      {sidebarOpen && (
-        <div
-          style={{
-            width: 200,
-            background: '#f5f5f5',
-            borderLeft: '1px solid #ccc',
-            padding: 10,
-            boxSizing: 'border-box',
-          }}
-        >
-          <h3>Ferramentas</h3>
-          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
-          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
-          <button style={{ display: 'block' }}>Remover Seleção</button>
+          {/* Botão flutuante para abrir/fechar a barra lateral */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: sidebarOpen ? 210 : 10,
+              zIndex: 10,
+              padding: '5px 10px',
+              cursor: 'pointer',
+            }}
+          >
+            {sidebarOpen ? 'Fechar' : 'Abrir'}
+          </button>
         </div>
-      )}
-    </div>
+
+        {/* Barra lateral */}
+        {sidebarOpen && (
+          <div
+            style={{
+              width: 200,
+              background: '#f5f5f5',
+              borderLeft: '1px solid #ccc',
+              padding: 10,
+              boxSizing: 'border-box',
+            }}
+          >
+            <h3>Ferramentas</h3>
+            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
+            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
+            <button style={{ display: 'block' }}>Remover Seleção</button>
+          </div>
+        )}
+      </div>
+    </ReactFlowProvider>
   );
 };
 
