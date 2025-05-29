@@ -56,7 +56,7 @@ const App = () => {
     <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
       <div style={{ flexGrow: 1, position: 'relative' }}>
         <ReactFlow
-          nodes={nodes}
+          nodes={displayedNodes} // Passar nodes atualizados
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
@@ -69,9 +69,7 @@ const App = () => {
           style={{ width: '100%', height: '100%' }}
           connectionMode={mode === 'addEdge' ? 'loose' : 'invalid'}
           onPaneClick={onPaneClick}
-        >
-          <Background />
-        </ReactFlow>
+        />
 
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
