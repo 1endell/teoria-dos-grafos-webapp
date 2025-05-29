@@ -1,4 +1,4 @@
-import CustomConnectionLine from './CustomConnectionLine';
+import CustomConnectionLine from '@/components/graph-editor/CustomConnectionLine';
 import React, { useCallback, useState } from 'react';
 import ReactFlow, {
   Background,
