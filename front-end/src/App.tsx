@@ -5,30 +5,19 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
-  ReactFlowProvider,
+  ReactFlowProvider
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-
 import CustomNode from './components/graph-editor/CustomNode';
 import CustomFloatingEdge from './components/graph-editor/CustomFloatingEdge';
 import CustomConnectionLine from './components/graph-editor/CustomConnectionLine';
 
-const initialNodes = [
-  { id: '1', type: 'custom', position: { x: 100, y: 100 } },
-  { id: '2', type: 'custom', position: { x: 300, y: 200 } },
-];
-
+const initialNodes = [ /* seus nós iniciais */ ];
 const initialEdges = [];
 
-const nodeTypes = { custom: CustomNode };
-const edgeTypes = { floating: CustomFloatingEdge };
-
-const connectionLineStyle = { stroke: '#000', strokeWidth: 2 };
-
-const App = () => {
+const AppContent = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge({ ...params, type: 'floating' }, eds)),
@@ -36,60 +25,30 @@ const App = () => {
   );
 
   return (
-    <ReactFlowProvider>
-      <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
-        <div style={{ flexGrow: 1, position: 'relative' }}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            fitView
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            connectionLineComponent={CustomConnectionLine}
-            connectionLineStyle={connectionLineStyle}
-            connectionMode="loose"
-            style={{ width: '100%', height: '100%' }}
-          >
-            <Background />
-          </ReactFlow>
-
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: sidebarOpen ? 210 : 10,
-              zIndex: 10,
-              padding: '5px 10px',
-              cursor: 'pointer',
-            }}
-          >
-            {sidebarOpen ? 'Fechar' : 'Abrir'}
-          </button>
-        </div>
-
-        {sidebarOpen && (
-          <div
-            style={{
-              width: 200,
-              background: '#f5f5f5',
-              borderLeft: '1px solid #ccc',
-              padding: 10,
-              boxSizing: 'border-box',
-            }}
-          >
-            <h3>Ferramentas</h3>
-            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
-            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
-            <button style={{ display: 'block' }}>Remover Seleção</button>
-          </div>
-        )}
-      </div>
-    </ReactFlowProvider>
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      nodeTypes={{ custom: CustomNode }}
+      edgeTypes={{ floating: CustomFloatingEdge }}
+      connectionLineComponent={CustomConnectionLine}
+      connectionMode="loose"
+      fitView
+      style={{ width: '100%', height: '100%' }}
+    >
+      <Background />
+    </ReactFlow>
   );
 };
+
+const App = () => (
+  <ReactFlowProvider>
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <AppContent />
+    </div>
+  </ReactFlowProvider>
+);
 
 export default App;
