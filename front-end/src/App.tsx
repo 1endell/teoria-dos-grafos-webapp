@@ -5,7 +5,7 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
-  ReactFlowProvider, // <- Garante o provider de zustand
+  ReactFlowProvider, // Import correto do zustand provider
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -38,9 +38,8 @@ const App = () => {
   );
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
-      {/* Envolve ReactFlow com ReactFlowProvider */}
-      <ReactFlowProvider>
+    <ReactFlowProvider>
+      <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
         <div style={{ flexGrow: 1, position: 'relative' }}>
           <ReactFlow
             nodes={nodes}
@@ -74,26 +73,26 @@ const App = () => {
             {sidebarOpen ? 'Fechar' : 'Abrir'}
           </button>
         </div>
-      </ReactFlowProvider>
 
-      {/* Barra lateral */}
-      {sidebarOpen && (
-        <div
-          style={{
-            width: 200,
-            background: '#f5f5f5',
-            borderLeft: '1px solid #ccc',
-            padding: 10,
-            boxSizing: 'border-box',
-          }}
-        >
-          <h3>Ferramentas</h3>
-          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
-          <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
-          <button style={{ display: 'block' }}>Remover Seleção</button>
-        </div>
-      )}
-    </div>
+        {/* Barra lateral */}
+        {sidebarOpen && (
+          <div
+            style={{
+              width: 200,
+              background: '#f5f5f5',
+              borderLeft: '1px solid #ccc',
+              padding: 10,
+              boxSizing: 'border-box',
+            }}
+          >
+            <h3>Ferramentas</h3>
+            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Vértice</button>
+            <button style={{ display: 'block', marginBottom: 10 }}>Adicionar Aresta</button>
+            <button style={{ display: 'block' }}>Remover Seleção</button>
+          </div>
+        )}
+      </div>
+    </ReactFlowProvider>
   );
 };
 
